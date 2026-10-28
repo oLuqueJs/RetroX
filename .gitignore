@@ -1,0 +1,17 @@
+# SwiftPM / Xcode
+.build/
+.swiftpm/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# macOS
+.DS_Store
+
+# Arquivos locais (caminhos pessoais, coleções, configs de teste reais)
+*.local.*
+local/
+
+# Artefatos gerados por scripts
+/dist/
