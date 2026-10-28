@@ -11,6 +11,12 @@ do {
     exit(1)
 }
 
+// Integração de processos no CI: termina sem acessar WindowServer/LaunchServices.
+if let argument = CommandLine.arguments.first(where: { $0.hasPrefix("--rx-headless-exit=") }),
+   let status = Int32(argument.dropFirst("--rx-headless-exit=".count)) {
+    exit(status)
+}
+
 let app = NSApplication.shared
 app.setActivationPolicy(.accessory)
 DispatchQueue.main.asyncAfter(deadline: .now() + 4) { exit(0) }

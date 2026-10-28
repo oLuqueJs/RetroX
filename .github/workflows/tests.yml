@@ -16,14 +16,30 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Registrar commit e toolchain
+        run: |
+          git rev-parse HEAD
+          xcodebuild -version
+          swift --version
       - name: Executar testes
-        run: scripts/test.sh
+        shell: bash
+        run: |
+          mkdir -p test-results
+          scripts/test.sh 2>&1 | tee test-results/unit.log
+      - name: Integração com emulador falso (sem janela)
+        shell: bash
+        run: scripts/integration-launch.sh --process-only 2>&1 | tee test-results/process-integration.log
+      - name: Guardar logs de testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RetroX-test-results
+          path: test-results/
+          if-no-files-found: ignore
       - name: Validar empacotamento
         run: scripts/package-app.sh 0.0.0
-      - name: Conferir conteúdo do ZIP e checksum
-        run: |
-          unzip -l dist/RetroX-0.0.0-macos-arm64.zip | grep 'RetroX.app/Contents/MacOS/RetroX'
-          (cd dist && shasum -a 256 -c SHA256SUMS.txt)
+      - name: Verificar pacote extraído
+        run: scripts/verify-package.sh 0.0.0
       - name: Disponibilizar pacote para download
         uses: actions/upload-artifact@v4
         with:

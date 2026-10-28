@@ -65,9 +65,13 @@ open .build/RetroX.app
 
 ```sh
 scripts/test.sh                   # testes unitários (Swift Testing)
+scripts/integration-launch.sh --process-only # processo falso sem janela (também no CI)
 scripts/integration-launch.sh     # abre um emulador falso de verdade e confere o argv
 RX_NETWORK=1 scripts/test.sh --filter MetadataNetworkTests   # busca real na Wikipedia (opt-in)
 ```
+
+Veja [a estratégia de testes](docs/TESTING.md) para mocks, validação do pacote e
+inspeções opcionais de instalações de PCSX2, Azahar e Ryujinx.
 
 ### Diagnóstico de launch
 
