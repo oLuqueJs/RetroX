@@ -77,11 +77,15 @@ public enum Palette {
 
     /// Tom das capas geradas quando não há imagem, por sistema. Não usa cores de marca.
     public static func coverTone(for system: GameSystemID) -> Tone {
-        switch system {
-        case .ps2: Tone(light: "2E3742", dark: "2E3742")
-        default: Tone(light: "3A3530", dark: "3A3530")
-        }
+        let hex = coverTones[system] ?? "3A3530"
+        return Tone(light: hex, dark: hex)
     }
+
+    /// Tons escuros e dessaturados, um por sistema, para distinguir capas geradas sem imitar cores de marca.
+    private static let coverTones: [GameSystemID: String] = [
+        .ps1: "4A4440", .ps2: "2E3742", .ps3: "2A2D33", .psp: "3A3550", .gamecube: "3F3A5A", .wii: "4A5560",
+        .nds: "3F4A45", .n3ds: "5A3A3A", .switchConsole: "5A3434", .gba: "3E3A5E", .snes: "46424F", .n64: "2F4A3F",
+    ]
 
     public static let onCover = Tone(light: "F3EEE7", dark: "F3EEE7")
 }
