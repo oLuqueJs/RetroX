@@ -183,6 +183,10 @@ Copyright © 2026 Otávio Luque ([yukaritake@proton.me](mailto:yukaritake@proton
 
 Este projeto é licenciado sob a GNU General Public License v3.0. Veja [LICENSE](LICENSE) para os detalhes.
 
+A licença vale para o **código**. A Rayo, o logo, o ícone e os nomes RetroX e Rayo são marca e ficam fora dela, com todos os direitos reservados. Veja [BRAND.md](BRAND.md) para o que é permitido e como publicar um fork.
+
+Contribuições são bem-vindas por fork e pull request. Veja o [guia de contribuição](CONTRIBUTING.md).
+
 Mesmo com a licença GPL, fique à vontade para entrar em contato se quiser usar o RetroX num projeto proprietário. Estou aberto a combinar licenças alternativas caso a caso.
 
 PCSX2, Dolphin e os nomes de consoles citados pertencem aos seus respectivos donos. O RetroX não é afiliado a eles, e ilustrações, logos e telas de terceiros citados como inspiração não são usados no projeto.

@@ -26,6 +26,7 @@ Decisões do usuário e suposições de trabalho que não cabem num ADR. Decisõ
 | D13 | Ajustes dentro da janela, navegáveis por controle, com presets Xbox, PlayStation (DualSense) e Switch. Fonte, tamanho do texto, visualização da tela inicial (Prateleira, Carrossel, Grade), fundo ambiente e animações são preferências do perfil. |
 | D14 | Abertura animada ao iniciar e transições suaves entre telas, inspiradas na fluidez do iiSU, com identidade própria. |
 | D15 | Marca do RetroX: a personagem **Rayo** (tile do ícone) e o nome com o "X" na cor de destaque, alinhados pela altura das maiúsculas. Substitui o R geométrico (conceito C). Kit e regras em `docs/design/logo/README.md`, gerados por `scripts/brand-kit.swift`. |
+| D16 | Código sob GPL-3.0; a marca (Rayo, logo, ícone e os nomes RetroX e Rayo) fica fora da licença, com todos os direitos reservados (2026-10-28). Regras em `BRAND.md`; contribuições por fork e PR em `CONTRIBUTING.md`. |
 
 ## Suposições de trabalho
 
