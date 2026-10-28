@@ -117,50 +117,19 @@ func drawTile(in rect: NSRect) {
 
 // MARK: O X
 
-/// O X da marca: duas hastes em cápsula, na caixa e na espessura do X da fonte, com um vão em volta da haste da
-/// frente (lê como uma passando sobre a outra) e o mesmo gradiente nas duas. As hastes do X da fonte afinam no
-/// cruzamento; por isso ele é construído, e não recortado do glifo.
+/// O X da marca: a letra da fonte com gradiente, do canto de cima à esquerda ao de baixo à direita. A cor inicial
+/// segura até 30% e então caminha até a final, misturada em OKLCH.
 enum BrandX {
-    /// Vão entre as hastes, em fração do corpo.
-    static let gap: CGFloat = 0.07
-
     static func draw(glyph: CGPath, size: CGFloat, tone: Tone, in ctx: CGContext) {
         let b = glyph.boundingBoxOfPath
-        // Largura horizontal da haste perto do pé, convertida para a espessura perpendicular.
-        let y = b.minY + 0.2 * b.height
-        var x = b.minX, first: CGFloat?, last: CGFloat = 0
-        while x <= b.midX {
-            if glyph.contains(CGPoint(x: x, y: y)) { if first == nil { first = x }; last = x } else if first != nil { break }
-            x += 0.25
-        }
-        let horizontalWidth = last - (first ?? last)
-        var r = horizontalWidth * 0.35
-        for _ in 0..<8 { r = horizontalWidth * sin(atan2(b.height - 2 * r, b.width - 2 * r)) / 2 }
-
-        let back = CGMutablePath(), front = CGMutablePath()
-        back.move(to: CGPoint(x: b.minX + r, y: b.maxY - r)); back.addLine(to: CGPoint(x: b.maxX - r, y: b.minY + r))
-        front.move(to: CGPoint(x: b.minX + r, y: b.minY + r)); front.addLine(to: CGPoint(x: b.maxX - r, y: b.maxY - r))
-        func capsule(_ path: CGPath, _ width: CGFloat) -> CGPath {
-            path.copy(strokingWithWidth: width, lineCap: .round, lineJoin: .round, miterLimit: 10)
-        }
-        let backShape = capsule(back, 2 * r), frontShape = capsule(front, 2 * r)
-
-        // O rosa segura até 30% e então caminha até o azul, do canto de cima à esquerda ao de baixo à direita.
         let stops = OKLCH.stops(from: tone.from, to: tone.to)
         let colors = [stops[0]] + stops
         let locations: [CGFloat] = [0] + (0..<stops.count).map { 0.3 + 0.7 * CGFloat($0) / CGFloat(stops.count - 1) }
         let gradient = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB),
                                   colors: colors.map(\.cgColor) as CFArray, locations: locations)!
-        func fill(_ shape: CGPath) {
-            ctx.saveGState(); ctx.addPath(shape); ctx.clip()
-            ctx.drawLinearGradient(gradient, start: CGPoint(x: b.minX, y: b.maxY), end: CGPoint(x: b.maxX, y: b.minY), options: [])
-            ctx.restoreGState()
-        }
-        fill(backShape)
-        ctx.saveGState(); ctx.addPath(backShape); ctx.clip()
-        ctx.addPath(capsule(front, 2 * r + gap * size)); ctx.setBlendMode(.clear); ctx.fillPath()
+        ctx.saveGState(); ctx.addPath(glyph); ctx.clip()
+        ctx.drawLinearGradient(gradient, start: CGPoint(x: b.minX, y: b.maxY), end: CGPoint(x: b.maxX, y: b.minY), options: [])
         ctx.restoreGState()
-        fill(frontShape)
     }
 }
 
@@ -396,7 +365,7 @@ let board = render(width: boardWidth, height: boardHeight, background: Palette.b
     Palette.day.setFill(); NSBezierPath(roundedRect: NSRect(x: 64 + square + 24, y: squareY, width: square, height: square), xRadius: 24, yRadius: 24).fill()
     place(xDark, centerX: 64 + square / 2, centerY: squareY + square / 2, scale: square / 512)
     place(xLight, centerX: 64 + square * 1.5 + 24, centerY: squareY + square / 2, scale: square / 512)
-    caption("Duas hastes, gradiente em OKLCH", x: 64, y: squareY - 56, color: Palette.paper, size: 20, weight: .regular, tracking: 0)
+    caption("Gradiente em OKLCH", x: 64, y: squareY - 56, color: Palette.paper, size: 20, weight: .regular, tracking: 0)
 
     // Cores
     let colorsX: CGFloat = 740

@@ -1,6 +1,6 @@
 # Kit da marca RetroX
 
-A marca é a **Rayo** (o tile) e o nome **RetroX**, com o "X" feito de duas hastes em gradiente. Tudo aqui é gerado a partir de
+A marca é a **Rayo** (o tile) e o nome **RetroX**, com o "X" em gradiente. Tudo aqui é gerado a partir de
 `docs/design/rayo/rayo.png` por `swift scripts/brand-kit.swift`; para mudar o kit, mude o original ou o script,
 nunca os PNGs à mão.
 
@@ -26,10 +26,8 @@ Toda medida vem da **altura das maiúsculas (C)** do nome, em SF Pro Rounded Hea
 - **Empilhada:** tile = 3C, centrado sobre o nome. Do pé do tile ao topo das maiúsculas: 1C.
 - **"o→X":** o X tem recuo lateral largo, então o par leva um aperto extra de −4,5% do corpo. Assim todos os vãos
   entre as letras ficam iguais.
-- **O X:** duas hastes em cápsula, na caixa e na espessura do X da fonte. A haste "/" passa por cima da "\\", com
-  um vão de 7% do corpo em volta dela. O X é construído, e não a letra da fonte, porque as hastes da fonte afinam
-  no cruzamento.
-- **Gradiente do X:** do canto de cima à esquerda ao de baixo à direita, igual nas duas hastes. A cor inicial
+- **O X:** a própria letra da fonte, com gradiente (sem contorno, sombra ou recorte).
+- **Gradiente do X:** do canto de cima à esquerda ao de baixo à direita. A cor inicial
   segura até 30% e então caminha até a final, misturada em OKLCH (o meio fica vivo, sem o cinza da mistura em RGB).
 - **Respiro:** no mínimo 1C livre em volta da assinatura.
 - **Tamanho mínimo:** horizontal com nome a partir de 16 pt; abaixo disso, só o tile.
