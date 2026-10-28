@@ -24,7 +24,7 @@ struct SplashView: View {
                     .scaleEffect(shown || !moves ? 1 : 0.9)
                     .opacity(shown ? 1 : 0)
                     .animation(moves ? .smooth(duration: 0.5 * f) : Motion.fade, value: shown)
-                            BrandWordmark(size: Self.wordSize)
+                BrandWordmark(size: Self.wordSize)
                     .alignmentGuide(VerticalAlignment.center) { $0[.firstTextBaseline] - metrics.capHeight / 2 }
                     .opacity(shown ? 1 : 0)
                     // O nome se escreve a partir do tile: a máscara abre da esquerda para a direita.

@@ -35,6 +35,23 @@ struct ThemeTests {
         )
     }
 
+    @Test("O X da marca é legível em todo o gradiente, em todos os temas", arguments: allPalettes)
+    func brandX(name: String, palette: ThemePalette) {
+        let dark = palette.background.luminance < 0.2
+        for stop in Palette.brandXStops(palette, dark: dark) {
+            #expect(HexColor.contrast(stop, palette.background) >= 3, "\(name): X sobre o fundo")
+        }
+    }
+
+    @Test("Gradiente em OKLCH começa e termina nas cores pedidas")
+    func oklchEndpoints() {
+        let stops = HexColor.oklchStops(from: HexColor("FEB5B8"), to: HexColor("7BADFD"))
+        for (stop, expected) in [(stops.first!, HexColor("FEB5B8")), (stops.last!, HexColor("7BADFD"))] {
+            #expect(abs(stop.red - expected.red) < 1.0 / 255 && abs(stop.green - expected.green) < 1.0 / 255
+                && abs(stop.blue - expected.blue) < 1.0 / 255)
+        }
+    }
+
     @Test("Capas geradas legíveis para todos os sistemas do catálogo", arguments: SystemCatalog.all.map(\.id))
     func coverTones(system: GameSystemID) {
         #expect(HexColor.contrast(Palette.onCover.light, Palette.coverTone(for: system).light) >= 4.5)

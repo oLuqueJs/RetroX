@@ -1,8 +1,9 @@
 import AppKit
 import CoreText
+import RetroXCore
 import SwiftUI
 
-/// Marca do RetroX: a Rayo e o nome com o "X" na cor de tema. `mark` é o tile do ícone, sem a margem da grade
+/// Marca do RetroX: a Rayo e o nome com o "X" de duas hastes em gradiente. `mark` é o tile do ícone, sem a margem da grade
 /// do macOS. As regras de composição são as do kit (docs/design/logo/README.md, scripts/brand-kit.swift).
 enum Brand {
     @MainActor static let mark = load("RayoMark")
@@ -39,20 +40,93 @@ enum Brand {
     }
 }
 
-/// O nome: "Retro" na cor do texto e "X" na cor de tema, com o vão "o→X" corrigido.
+/// O nome: "Retro" na cor do texto e o X da marca, com o vão "o→X" corrigido.
 struct BrandWordmark: View {
     let size: CGFloat
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
             Text("Retro")
                 .foregroundStyle(Theme.textPrimary)
-            Text("X")
-                .foregroundStyle(Theme.accent)
+                .font(Brand.font(size))
+                .kerning(-0.015 * size)
+            BrandX(size: size)
                 .padding(.leading, Brand.oxKern * size)
         }
-        .font(Brand.font(size))
-        .kerning(-0.015 * size)
+    }
+}
+
+/// Geometria do X da marca num corpo: a caixa do glifo "X" (y para cima, a partir da linha de base), o avanço e
+/// o raio das hastes, medido da espessura do X da fonte.
+struct BrandXGeometry {
+    let bounds: CGRect
+    let advance: CGFloat
+    let radius: CGFloat
+
+    init(size: CGFloat) {
+        let base = NSFont.systemFont(ofSize: size, weight: .heavy)
+        let font = (base.fontDescriptor.withDesign(.rounded).flatMap { NSFont(descriptor: $0, size: size) } ?? base) as CTFont
+        var character = UniChar(88) // "X"
+        var glyph = CGGlyph()
+        CTFontGetGlyphsForCharacters(font, &character, &glyph, 1)
+        let path = CTFontCreatePathForGlyph(font, glyph, nil) ?? CGPath(rect: .zero, transform: nil)
+        let b = path.boundingBoxOfPath
+        bounds = b
+        advance = CTFontGetAdvancesForGlyphs(font, .horizontal, &glyph, nil, 1)
+        // Largura horizontal da haste perto do pé, convertida para a espessura perpendicular.
+        let y = b.minY + 0.2 * b.height
+        var x = b.minX, first: CGFloat?, last: CGFloat = 0
+        while x <= b.midX {
+            if path.contains(CGPoint(x: x, y: y)) { if first == nil { first = x }; last = x } else if first != nil { break }
+            x += max(size / 400, 0.05)
+        }
+        let horizontalWidth = last - (first ?? last)
+        var r = horizontalWidth * 0.35
+        for _ in 0..<8 { r = horizontalWidth * sin(atan2(b.height - 2 * r, b.width - 2 * r)) / 2 }
+        radius = r
+    }
+}
+
+/// O X da marca (docs/design/logo/README.md): duas hastes em cápsula, a "/" passando sobre a "\\" com um vão em
+/// volta, e o mesmo gradiente nas duas, da cor de destaque do tema até o céu da Rayo, misturado em OKLCH.
+struct BrandX: View {
+    let size: CGFloat
+    @Environment(\.colorScheme) private var colorScheme
+
+    /// Vão entre as hastes, em fração do corpo.
+    private static let gap: CGFloat = 0.07
+
+    var body: some View {
+        let geometry = BrandXGeometry(size: size)
+        let b = geometry.bounds, r = geometry.radius, height = b.height
+        let dark = colorScheme == .dark
+        let palette = Theme.current.theme.palette(dark: dark, retroXAccent: Theme.current.accent)
+        let stops = Palette.brandXStops(palette, dark: dark).map { Color(red: $0.red, green: $0.green, blue: $0.blue) }
+        // A cor de destaque segura até 30% e então caminha até o céu.
+        let gradient = Gradient(stops: [.init(color: stops[0], location: 0)] + stops.enumerated().map { index, color in
+            .init(color: color, location: 0.3 + 0.7 * CGFloat(index) / CGFloat(stops.count - 1))
+        })
+        Canvas { context, _ in
+            // Coordenadas do Canvas: x igual ao do glifo, y para baixo a partir do topo do X.
+            func capsule(from start: CGPoint, to end: CGPoint, width: CGFloat) -> Path {
+                Path { $0.move(to: start); $0.addLine(to: end) }
+                    .strokedPath(StrokeStyle(lineWidth: width, lineCap: .round))
+            }
+            let back = (CGPoint(x: b.minX + r, y: r), CGPoint(x: b.maxX - r, y: height - r))
+            let front = (CGPoint(x: b.minX + r, y: height - r), CGPoint(x: b.maxX - r, y: r))
+            let shading = GraphicsContext.Shading.linearGradient(
+                gradient, startPoint: CGPoint(x: b.minX, y: 0), endPoint: CGPoint(x: b.maxX, y: height))
+            context.drawLayer { layer in
+                layer.fill(capsule(from: back.0, to: back.1, width: 2 * r), with: shading)
+                layer.blendMode = .clear
+                layer.fill(capsule(from: front.0, to: front.1, width: 2 * r + Self.gap * size), with: .color(.black))
+                layer.blendMode = .normal
+                layer.fill(capsule(from: front.0, to: front.1, width: 2 * r), with: shading)
+            }
+        }
+        .frame(width: geometry.advance, height: height)
+        .alignmentGuide(.firstTextBaseline) { _ in b.maxY }
+        .accessibilityHidden(true)
     }
 }
 
