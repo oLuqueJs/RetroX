@@ -153,3 +153,5 @@ Resultado da revisão feita no plano técnico aprovado. Prevalece sobre as seç�
 | Jornada 2 | "Retornar à biblioteca" = o emulador é aberto em modo batch (fecha ao parar o jogo) e o RetroX volta à frente quando o processo termina. |
 | RNF-09 | Além de Xcode/`xcodebuild`, o caminho reproduzível sem Xcode é `swift build` / `swift test` (SwiftPM). |
 | Plataforma | O deployment target macOS 14 compila, mas não é testável na máquina de desenvolvimento atual (macOS 27). A escolha entre 14 e 15 será feita no gate da Fase 1 (ver ADR-0005). |
+| Emuladores (2026-10-28) | Emuladores viram plugins ativados pelo usuário, cada um com uma pasta raiz (ADR-0013). O onboarding e a jornada 1 passam a ser "ativar o emulador → escolher a pasta dele → ver os jogos"; o RF-01 (escolher pastas de ROMs) é atendido pela descoberta do plugin e pelas pastas que o próprio emulador já conhece. |
+| Home (2026-10-28) | A home é o layout de portátil (palco + prateleira) desde já, com teclado, mouse e controle; o Console Mode em tela cheia (RF-11) continua Should. |

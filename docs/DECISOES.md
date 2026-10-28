@@ -10,6 +10,15 @@ Decisões do usuário e suposições de trabalho que não cabem num ADR. Decisõ
 | D2 | Git autorizado: repositório local, commits pequenos por tarefa, sem remote e sem push. |
 | D3 | O produto passa a se chamar **RetroX** (módulos `RetroXCore`, `RetroXApp`…). "ConsoleShelf" fica só como histórico em `docs/origem/`. |
 
+## Decisões do usuário (2026-10-28)
+
+| ID | Decisão |
+|---|---|
+| D4 | Emuladores são **plugins** que o usuário ativa; o primeiro é o plugin nativo do PCSX2 (ADR-0013). |
+| D5 | A "pasta raiz" de um emulador é a pasta que guarda o app dele junto com ROMs, capas e BIOS (ex.: `~/Emulators/ps2`). |
+| D6 | Direção visual **"Portátil quente"** (docs/design/brand-spec.md), com a usabilidade de launcher de portátil inspirada no iiSU e identidade própria. |
+| D7 | A skill `swiftui-design-skill` faz parte do projeto (`.claude/skills/`); os passos dela de baixar assets de marca não se aplicam. |
+
 ## Suposições de trabalho
 
 | ID | Suposição | Revisar em |
@@ -19,6 +28,8 @@ Decisões do usuário e suposições de trabalho que não cabem num ADR. Decisõ
 | S3 | Por padrão o RetroX respeita a configuração do emulador (tela cheia, confirmação ao sair) e não grava nos arquivos de configuração dele. | — |
 | S4 | Dolphin não está instalado na máquina de desenvolvimento; o adapter é testado com fakes até que esteja. | Fase 4 |
 | S5 | Deployment target macOS 14 (do PRD), com a troca para macOS 15 em aberto. | Gate da Fase 1 |
+| S6 | Até a Fase 2, o ID de um jogo é o caminho do arquivo; favoritos e histórico ficam em JSON. | Fase 2 |
+| S7 | A CLI do PCSX2 2.9.147 é igual à da 2.9.144 validada no spike (conferido no texto de ajuda do binário). | A cada versão |
 
 ## Pendências que dependem do usuário
 

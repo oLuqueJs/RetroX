@@ -41,3 +41,6 @@ Observações:
 - ROM em pasta protegida pelo TCC (Documentos, Mesa, Downloads, volume removível): o prompt de privacidade e a quem ele é atribuído ficam para a Fase 2.
 - PCSX2 nativo arm64 (não há build oficial no momento) e macOS 14 em runtime.
 - Interação com `ConfirmShutdown=true` quando o usuário fecha o jogo pela interface do PCSX2 (validação manual no Gate G0).
+
+## Atualização (2026-10-28)
+O usuário atualizou para o PCSX2 2.9.147. O texto de ajuda do binário novo traz o mesmo `Usage` e as mesmas flags usadas aqui (`-batch`, `--`, `-fullscreen`, `-nofullscreen`, `-bigpicture`, `-fastboot`, `-slowboot`), com o mesmo bundle ID e ainda x86_64. Não houve novo launch real nesta verificação.

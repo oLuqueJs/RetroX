@@ -2,7 +2,15 @@
 
 Launcher nativo para macOS que reúne numa biblioteca visual os jogos de vários consoles e abre cada um no emulador externo que o usuário já tem instalado. O RetroX não inclui emuladores, jogos, BIOS nem chaves, e não copia, move ou altera os arquivos de jogo.
 
-**Status:** Sprint 1 (prova técnica do launch com PCSX2). Nome anterior provisório: ConsoleShelf.
+**Status:** Sprint 1 (launch com PCSX2, home e emuladores como plugins). Nome anterior provisório: ConsoleShelf.
+
+## Como usar
+
+1. Abra o RetroX e vá em **Emuladores**.
+2. Ative o **PCSX2** e escolha a pasta dele: a que tem o `PCSX2.app` e as pastas de jogos (por exemplo `~/Emulators/ps2`, com `roms/` e `covers/`). O RetroX também usa as pastas de jogos, as capas e a BIOS que o próprio PCSX2 já conhece.
+3. Na tela inicial, navegue com as setas ou com o controle e pressione **Return** (ou o botão de confirmar) para jogar. Quando o PCSX2 fecha, o RetroX volta para a frente.
+
+Teclado: ←/→ escolhe o jogo, ↑/↓ ou Q/E troca de prateleira, Espaço abre os detalhes, F favorita, M abre Emuladores. Nada nas pastas dos jogos é copiado, movido ou alterado.
 
 ## Requisitos
 
