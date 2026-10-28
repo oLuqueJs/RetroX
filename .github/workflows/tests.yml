@@ -3,7 +3,7 @@ name: Testes
 on:
   pull_request:
   push:
-    branches-ignore: [main]
+    branches-ignore: [main, beta]
   workflow_dispatch:
   workflow_call:
 

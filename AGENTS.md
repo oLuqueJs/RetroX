@@ -32,25 +32,48 @@ application UI from reusable core functionality.
 
 ## Git Workflow
 
-The project uses GitHub Flow. `main` is always releasable and protected.
+Two long-lived, protected branches:
 
-1. Never commit or push directly to `main`.
-2. Branch from an up-to-date `main`. Name branches `<type>/<short-description>`
+- `beta`: where changes land first. Every merge publishes a pre-release
+  (`1.2.0-beta.1`, `1.2.0-beta.2`, ...).
+- `main`: stable. Only receives promotions from `beta` and urgent hotfixes.
+  Every merge may publish a stable release.
+
+Rules:
+
+1. Never commit or push directly to `main` or `beta`.
+2. Branch from an up-to-date `beta`. Name branches `<type>/<short-description>`
    with the same types as commits: `feat/`, `fix/`, `chore/`, `docs/`,
    `refactor/`, `test/`, `ci/`.
 3. Keep branches short-lived and focused on one change.
-4. Open a pull request to `main`. Required: CI (workflow "Testes") green.
-5. PRs are merged with **squash merge** only. The PR title becomes the commit
-   on `main`, so it must be a valid Conventional Commit, in Portuguese:
+4. Open a pull request to `beta`. Required: CI (workflow "Testes") green.
+   Contributions from forks follow the same rule.
+5. PRs into `beta` are merged with **squash merge**. The PR title becomes the
+   commit on `beta`, so it must be a valid Conventional Commit, in Portuguese:
    `feat(biblioteca): detecta capas do Azahar`.
 6. Delete the branch after merge.
-7. Never merge without human approval, never force-push `main`, never skip
-   hooks or CI.
+7. Never merge without human approval, never force-push `main` or `beta`,
+   never skip hooks or CI.
+
+### Promoting to stable
+
+A stable release happens when a PR `beta` -> `main` is merged, after the
+pre-release was tested. That PR uses a **merge commit**, not squash, so release
+notes keep their detail. Never open it without being asked.
+
+### Exceptions to go straight to `main`
+
+- Urgent hotfixes (`fix/`), branched from `main`.
+- Changes that do not publish a version and do not touch app behavior
+  (`docs`, `ci`).
+
+After any change merged straight into `main`, merge `main` back into `beta`
+to keep the branches in sync.
 
 ### Commits and versions
 
-semantic-release publishes a release on every merge to `main`, using the
-rules in `.releaserc.json`:
+semantic-release publishes a release on every merge to `beta` (pre-release)
+and `main` (stable), using the rules in `.releaserc.json`:
 
 | Commit type | Release |
 | --- | --- |

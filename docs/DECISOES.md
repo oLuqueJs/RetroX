@@ -27,7 +27,8 @@ Decisões do usuário e suposições de trabalho que não cabem num ADR. Decisõ
 | D14 | Abertura animada ao iniciar e transições suaves entre telas, inspiradas na fluidez do iiSU, com identidade própria. |
 | D15 | Marca do RetroX: a personagem **Rayo** (tile do ícone) e o nome com o "X" na cor de destaque, alinhados pela altura das maiúsculas. Substitui o R geométrico (conceito C). Kit e regras em `docs/design/logo/README.md`, gerados por `scripts/brand-kit.swift`. |
 | D16 | Código sob GPL-3.0; a marca (Rayo, logo, ícone e os nomes RetroX e Rayo) fica fora da licença, com todos os direitos reservados (2026-10-28). Regras em `BRAND.md`; contribuições por fork e PR em `CONTRIBUTING.md`. |
-| D17 | Fluxo de branches: GitHub Flow. `main` protegida e sempre liberável; branches curtas `<tipo>/<descrição>`; PR com CI verde e squash merge, cujo título é um Conventional Commit. Cada merge pode publicar uma release (semantic-release, regras em `.releaserc.json`). Sem `develop` nem nightly por ora; canal `next` fica como opção. Regras para agentes em `AGENTS.md`. |
+| D17 | Fluxo de branches: duas branches protegidas, `beta` (entrada de todas as mudanças, pré-releases) e `main` (estável). Branches curtas `<tipo>/<descrição>`; PR com CI verde e squash merge, cujo título é um Conventional Commit. Sem `develop` nem nightly. Regras para agentes em `AGENTS.md`. |
+| D18 | Pré-releases na branch `beta` (semantic-release, `prerelease: true`), versões `X.Y.Z-beta.N`. Todo PR, inclusive de forks, vai para a `beta`; a `main` recebe só a promoção `beta` -> `main` (PR com merge commit) e hotfixes. `docs` e `ci` podem ir direto à `main`, com a `main` integrada de volta na `beta`. Nome `beta` coincide com o sufixo da versão e a convenção do semantic-release. |
 
 ## Suposições de trabalho
 

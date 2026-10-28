@@ -42,28 +42,35 @@ detalhes, e a resposta vem o quanto antes.
 
 ### Fluxo de branches
 
-O projeto usa **GitHub Flow**: a `main` está sempre pronta para release e é protegida. Todo trabalho
-entra por pull request, vindo de uma branch curta (ou de um fork) criada a partir da `main`.
+O projeto tem duas branches protegidas:
+
+- **`beta`**: onde toda mudança entra primeiro. Cada merge publica uma pré-release
+  (`1.2.0-beta.1`, `1.2.0-beta.2`…), marcada como *pre-release* no GitHub e fora do link "última versão".
+- **`main`**: a versão estável. Só recebe a promoção da `beta` e correções urgentes.
+
+**Todo pull request, inclusive de forks, vai para a `beta`.** Se você abrir contra a `main` por engano,
+o mantenedor muda o alvo.
 
 - Nome da branch: `<tipo>/<descrição-curta>`, com os mesmos tipos dos commits.
-- O PR exige o CI verde e é integrado com **squash merge**. O título do PR vira o commit na `main`,
+- O PR exige o CI verde e é integrado com **squash merge**. O título do PR vira o commit na `beta`,
   então ele precisa seguir o padrão de commits abaixo.
-- Cada merge pode publicar uma release (veja [Releases](#releases)); por isso, agrupe mudanças
-  relacionadas num PR só.
 - Depois do merge, a branch é apagada.
+- A versão estável sai quando o mantenedor integra a `beta` na `main`, por um PR com **merge commit**
+  (sem squash). Depois de um hotfix ou de uma mudança direto na `main`, a `main` é integrada de volta
+  na `beta`.
 
 ### Enviando código por fork e pull request
 
 1. Faça um **fork** do repositório e clone o seu fork.
-2. Crie uma branch a partir da `main`, com um nome que descreva a mudança:
+2. Crie uma branch a partir da `beta`, com um nome que descreva a mudança:
    `feat/dolphin-adapter`, `fix/scan-capas`, `docs/readme`.
 3. Faça a mudança (veja as regras abaixo) e rode as verificações.
-4. Envie a branch para o seu fork e abra um **pull request** para a `main` deste repositório.
+4. Envie a branch para o seu fork e abra um **pull request** para a `beta` deste repositório.
 5. Descreva o que mudou e por quê, e ligue a issue relacionada (`Closes #123`).
 6. Responda aos comentários da revisão. Se pedirem ajustes, adicione commits à mesma branch.
 
 Pull requests de primeira vez passam pelo CI (workflow **Testes**). Ele precisa estar verde para o
-merge. Ninguém faz push direto na `main`; todo merge passa por revisão.
+merge. Ninguém faz push direto na `main` nem na `beta`; todo merge passa por revisão.
 
 ## Ambiente de desenvolvimento
 
@@ -112,8 +119,8 @@ O `!` depois do tipo não é reconhecido.
 
 ## Releases
 
-O workflow **Testes** roda em pull requests, em pushes para branches fora de `main` e sob demanda.
-O workflow de release reutiliza esses testes no commit enviado a `main`; depois deles, o
+O workflow **Testes** roda em pull requests, em pushes para branches fora de `main` e `beta` e sob demanda.
+O workflow de release reutiliza esses testes no commit enviado a `main` ou `beta`; depois deles, o
 semantic-release lê os commits, cria a tag e publica uma GitHub Release com o ZIP do `RetroX.app`
 (Apple Silicon) e o SHA-256. As regras de versão estão em `.releaserc.json`:
 
