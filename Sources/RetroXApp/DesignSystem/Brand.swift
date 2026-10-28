@@ -63,7 +63,17 @@ struct BrandXGeometry {
     let advance: CGFloat
     let radius: CGFloat
 
-    init(size: CGFloat) {
+    /// A medida varre o contorno do glifo; guardada por corpo, porque o `body` pode ser recalculado a toda hora.
+    @MainActor private static var cache: [CGFloat: BrandXGeometry] = [:]
+
+    @MainActor static func of(size: CGFloat) -> BrandXGeometry {
+        if let cached = cache[size] { return cached }
+        let geometry = BrandXGeometry(size: size)
+        cache[size] = geometry
+        return geometry
+    }
+
+    private init(size: CGFloat) {
         let base = NSFont.systemFont(ofSize: size, weight: .heavy)
         let font = (base.fontDescriptor.withDesign(.rounded).flatMap { NSFont(descriptor: $0, size: size) } ?? base) as CTFont
         var character = UniChar(88) // "X"
@@ -97,7 +107,7 @@ struct BrandX: View {
     private static let gap: CGFloat = 0.07
 
     var body: some View {
-        let geometry = BrandXGeometry(size: size)
+        let geometry = BrandXGeometry.of(size: size)
         let b = geometry.bounds, r = geometry.radius, height = b.height
         let dark = colorScheme == .dark
         let palette = Theme.current.theme.palette(dark: dark, retroXAccent: Theme.current.accent)

@@ -34,8 +34,10 @@ Toda medida vem da **altura das maiúsculas (C)** do nome, em SF Pro Rounded Hea
 - **Respiro:** no mínimo 1C livre em volta da assinatura.
 - **Tamanho mínimo:** horizontal com nome a partir de 16 pt; abaixo disso, só o tile.
 
-No app, `BrandLockup`, `BrandWordmark` e `BrandMark` (`Sources/RetroXApp/DesignSystem/Brand.swift`) aplicam as
-mesmas regras de alinhamento.
+No app, `BrandLockup`, `BrandWordmark`, `BrandX` e `BrandMark` (`Sources/RetroXApp/DesignSystem/Brand.swift`) aplicam
+as mesmas regras. Lá o gradiente do X vai da cor de destaque do tema até o céu da Rayo (`#7BADFD` no escuro,
+`#2F6BDF` no claro); no tema Rayo Paradise isso reproduz exatamente as cores do kit. `ThemeTests` confere que o X
+tem pelo menos 3:1 sobre o fundo em todo o gradiente, em todos os temas.
 
 ## Cores
 
