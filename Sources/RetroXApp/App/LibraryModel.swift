@@ -2,7 +2,7 @@ import Foundation
 import Observation
 import RetroXCore
 
-/// Os jogos dos plugins prontos, organizados em prateleiras, com o jogo em foco.
+/// Os jogos dos plugins prontos, com o histórico do perfil atual e as personalizações (capa, informações).
 @MainActor
 @Observable
 final class LibraryModel {
@@ -22,19 +22,34 @@ final class LibraryModel {
         }
     }
 
+    /// Jogos já com a capa escolhida pelo usuário, quando houver.
     private(set) var games: [Game] = []
-    private(set) var history: [String: GameHistory]
+    private(set) var history: [String: GameHistory] = [:]
+    private(set) var customizations: [String: GameCustomization]
     private(set) var isScanning = false
     private(set) var hasLoaded = false
     private(set) var shelf: Shelf = .all
     private(set) var focusedGameID: Game.ID?
 
-    @ObservationIgnored private let store: JSONFileStore<[String: GameHistory]>
+    @ObservationIgnored private var scanned: [Game] = []
+    @ObservationIgnored private var historyStore: JSONFileStore<[String: GameHistory]>?
+    @ObservationIgnored let artwork: ArtworkStorage
 
-    init(store: JSONFileStore<[String: GameHistory]> = JSONFileStore(url: RetroXDirectories.applicationSupport.appending(path: "history.json"))) {
-        self.store = store
-        history = store.load() ?? [:]
+    init(artwork: ArtworkStorage = ArtworkStorage()) {
+        self.artwork = artwork
+        customizations = artwork.customizations.load() ?? [:]
     }
+
+    // MARK: Perfil
+
+    func use(_ profile: Profile, storage: ProfileStorage) {
+        historyStore = storage.history(for: profile.id)
+        history = historyStore?.load() ?? [:]
+        shelf = shelves.contains(.recent) ? .recent : .all
+        focusedGameID = visibleGames.first?.id
+    }
+
+    // MARK: Prateleiras (tela inicial)
 
     var shelves: [Shelf] {
         var result: [Shelf] = []
@@ -49,17 +64,17 @@ final class LibraryModel {
 
     var visibleGames: [Game] {
         switch shelf {
-        case .all:
-            games
-        case .favorites:
-            games.filter { history[$0.id]?.isFavorite == true }
-        case .recent:
-            games
-                .filter { history[$0.id]?.lastPlayedAt != nil }
-                .sorted { (history[$0.id]?.lastPlayedAt ?? .distantPast) > (history[$1.id]?.lastPlayedAt ?? .distantPast) }
-        case .system(let id):
-            games.filter { $0.systemID == id }
+        case .all: games
+        case .favorites: games.filter { isFavorite($0) }
+        case .recent: recentGames
+        case .system(let id): games.filter { $0.systemID == id }
         }
+    }
+
+    var recentGames: [Game] {
+        games
+            .filter { history[$0.id]?.lastPlayedAt != nil }
+            .sorted { (history[$0.id]?.lastPlayedAt ?? .distantPast) > (history[$1.id]?.lastPlayedAt ?? .distantPast) }
     }
 
     var focusedIndex: Int? {
@@ -69,33 +84,6 @@ final class LibraryModel {
 
     var focusedGame: Game? {
         focusedIndex.map { visibleGames[$0] }
-    }
-
-    func history(for game: Game) -> GameHistory {
-        history[game.id] ?? GameHistory()
-    }
-
-    func gameCount(for plugin: EmulatorPluginID) -> Int {
-        games.filter { $0.pluginID == plugin }.count
-    }
-
-    func reload(from ready: [(any EmulatorPlugin, PluginDiscovery)]) async {
-        isScanning = true
-        let scanned = await Task.detached(priority: .userInitiated) {
-            ready.flatMap { plugin, discovery in LibraryBuilder.games(for: plugin, discovery: discovery) }
-        }.value
-        let isFirstLoad = !hasLoaded
-        games = scanned
-        hasLoaded = true
-        isScanning = false
-        if isFirstLoad, shelves.contains(.recent) {
-            shelf = .recent
-        } else if !shelves.contains(shelf) {
-            shelf = .all
-        }
-        if focusedGame?.id != focusedGameID {
-            focusedGameID = visibleGames.first?.id
-        }
     }
 
     func focus(_ game: Game) {
@@ -122,6 +110,45 @@ final class LibraryModel {
         select(all[(index + offset + all.count) % all.count])
     }
 
+    // MARK: Jogos
+
+    func game(withID id: Game.ID) -> Game? {
+        games.first { $0.id == id }
+    }
+
+    func gameCount(for plugin: EmulatorPluginID) -> Int {
+        games.filter { $0.pluginID == plugin }.count
+    }
+
+    func reload(from ready: [(any EmulatorPlugin, PluginDiscovery)]) async {
+        isScanning = true
+        scanned = await Task.detached(priority: .userInitiated) {
+            ready.flatMap { plugin, discovery in LibraryBuilder.games(for: plugin, discovery: discovery) }
+        }.value
+        decorate()
+        let isFirstLoad = !hasLoaded
+        hasLoaded = true
+        isScanning = false
+        if isFirstLoad, shelves.contains(.recent) {
+            shelf = .recent
+        } else if !shelves.contains(shelf) {
+            shelf = .all
+        }
+        if focusedGame?.id != focusedGameID {
+            focusedGameID = visibleGames.first?.id
+        }
+    }
+
+    // MARK: Histórico do perfil
+
+    func history(for game: Game) -> GameHistory {
+        history[game.id] ?? GameHistory()
+    }
+
+    func isFavorite(_ game: Game) -> Bool {
+        history[game.id]?.isFavorite == true
+    }
+
     func toggleFavorite(_ game: Game) {
         edit(game) { $0.isFavorite.toggle() }
     }
@@ -137,6 +164,47 @@ final class LibraryModel {
         var entry = history[game.id] ?? GameHistory()
         change(&entry)
         history[game.id] = entry
-        try? store.save(history)
+        try? historyStore?.save(history)
+    }
+
+    // MARK: Personalização (compartilhada entre perfis)
+
+    func customization(for game: Game) -> GameCustomization? {
+        customizations[game.id]
+    }
+
+    func hasCustomCover(_ game: Game) -> Bool {
+        customizations[game.id]?.coverFile != nil
+    }
+
+    /// Copia a imagem escolhida como capa e devolve o endereço dela.
+    @discardableResult
+    func setCustomCover(for game: Game, from source: URL) throws -> URL {
+        let name = try artwork.importCover(from: source, for: game.id)
+        customize(game) { $0.coverFile = name }
+        return artwork.artworkDirectory.appending(path: name)
+    }
+
+    func removeCustomCover(for game: Game) {
+        if let url = artwork.coverURL(for: customizations[game.id]) { try? FileManager.default.removeItem(at: url) }
+        customize(game) { $0.coverFile = nil }
+    }
+
+    func setMetadata(_ metadata: GameMetadata?, for game: Game) {
+        customize(game) { $0.metadata = metadata }
+    }
+
+    private func customize(_ game: Game, _ change: (inout GameCustomization) -> Void) {
+        var entry = customizations[game.id] ?? GameCustomization()
+        change(&entry)
+        customizations[game.id] = entry == GameCustomization() ? nil : entry
+        try? artwork.customizations.save(customizations)
+        decorate()
+    }
+
+    private func decorate() {
+        games = scanned.map { game in
+            artwork.coverURL(for: customizations[game.id]).map(game.withCover) ?? game
+        }
     }
 }

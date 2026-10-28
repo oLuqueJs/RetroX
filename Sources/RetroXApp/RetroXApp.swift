@@ -6,8 +6,6 @@ import SwiftUI
 struct RetroXApp: App {
     // Constante em vez de `@State`: no SDK 27 `@State` é uma macro que as Command Line Tools não trazem (ADR-0010).
     private let model = AppModel()
-    @AppStorage("appearance") private var appearance = Appearance.system
-    @AppStorage("accent") private var accent = Palette.Accent.coral
 
     init() {
         // Rodando fora de um .app (swift run), o processo nasceria sem ícone no Dock nem foco.
@@ -19,49 +17,58 @@ struct RetroXApp: App {
             RootView()
                 .environment(model)
                 .environment(model.covers)
-                .environment(\.accent, accent)
-                .tint(Color(accent.fill))
-                .preferredColorScheme(appearance.colorScheme)
         }
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1240, height: 800)
 
         Settings {
-            SettingsView()
-                .environment(\.accent, accent)
+            SettingsRoot()
+                .environment(model)
+                .environment(model.covers)
         }
     }
 }
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.accent) private var accent
 
     var body: some View {
         @Bindable var model = model
         ZStack {
             Theme.background
                 .ignoresSafeArea()
-            switch model.screen {
-            case .home:
-                HomeView()
-                    .transition(.opacity)
-            case .emulators:
-                EmulatorsView()
-                    .transition(.opacity)
+            Group {
+                switch model.screen {
+                case .profiles: ProfilePickerView()
+                case .home: HomeView()
+                case .library: LibraryView()
+                case .emulators: EmulatorsView()
+                }
             }
+            .transition(.opacity)
             if model.session.isPresenting {
                 SessionOverlay()
                     .transition(.opacity)
             }
         }
+        // O tema é a identidade da árvore: trocar de tema redesenha tudo com as cores novas.
+        .id(model.themeSelection)
+        .tint(Theme.accent)
+        .preferredColorScheme(model.appearance.colorScheme)
         .animation(Motion.fade, value: model.screen)
         .animation(Motion.fade, value: model.session.isPresenting)
         .sheet(item: $model.detailsGame) { game in
             GameDetailsView(game: game)
                 .environment(model)
                 .environment(model.covers)
-                .environment(\.accent, accent)
+        }
+        .sheet(item: $model.editingProfile) { draft in
+            ProfileEditorView(draft: draft)
+                .environment(model)
+                .environment(model.covers)
+        }
+        .alert(model.notice ?? "", isPresented: Binding(get: { model.notice != nil }, set: { if !$0 { model.notice = nil } })) {
+            Button("OK", role: .cancel) { model.notice = nil }
         }
         .frame(minWidth: 1024, minHeight: 680)
         .task { await model.start() }
@@ -81,5 +88,17 @@ struct RootView: View {
         if let message {
             AccessibilityNotification.Announcement(message).post()
         }
+    }
+}
+
+/// Janela de Ajustes, com o mesmo tema e aparência do perfil atual.
+private struct SettingsRoot: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        SettingsView()
+            .id(model.themeSelection)
+            .tint(Theme.accent)
+            .preferredColorScheme(model.appearance.colorScheme)
     }
 }

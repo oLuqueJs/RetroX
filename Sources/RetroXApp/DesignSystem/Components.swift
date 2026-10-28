@@ -1,52 +1,75 @@
+import AppKit
 import RetroXCore
 import SwiftUI
 
 /// Ação principal: preenchida com a cor de tema.
 struct PrimaryButtonStyle: ButtonStyle {
-    @Environment(\.accent) private var accent
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Typography.bodyEmphasis)
-            .foregroundStyle(Color(accent.onFill))
+            .foregroundStyle(Theme.onAccent)
             .padding(.horizontal, Spacing.l)
             .frame(minHeight: 44)
-            .background(Color(accent.fill).opacity(configuration.isPressed ? 0.85 : 1), in: Capsule())
-            .opacity(isEnabled ? 1 : 0.45)
+            .background(Theme.accent, in: Capsule())
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.9 : 1) : 0.45)
             .contentShape(Capsule())
+            .animation(Motion.hover, value: configuration.isPressed)
     }
 }
 
 /// Ação secundária: superfície neutra, sem cor de tema.
 struct SecondaryButtonStyle: ButtonStyle {
+    var isCompact = false
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(Typography.bodyEmphasis)
+            .font(isCompact ? Typography.caption : Typography.bodyEmphasis)
             .foregroundStyle(Theme.textPrimary)
-            .padding(.horizontal, Spacing.m)
-            .frame(minHeight: 44)
-            .background(Theme.raised.opacity(configuration.isPressed ? 0.7 : 1), in: Capsule())
-            .opacity(isEnabled ? 1 : 0.45)
+            .padding(.horizontal, isCompact ? Spacing.s + Spacing.xs : Spacing.m)
+            .frame(minHeight: isCompact ? 32 : 44)
+            .background(Theme.raised, in: Capsule())
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.8 : 1) : 0.45)
             .contentShape(Capsule())
+            .animation(Motion.hover, value: configuration.isPressed)
     }
 }
 
 /// Botão redondo só com ícone (favoritar, detalhes). Sempre com rótulo para VoiceOver.
 struct IconButtonStyle: ButtonStyle {
     var isActive = false
-    @Environment(\.accent) private var accent
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 17, weight: .semibold))
-            .foregroundStyle(isActive ? Color(accent.onFill) : Theme.textPrimary)
+            .foregroundStyle(isActive ? Theme.onAccent : Theme.textPrimary)
             .frame(width: 44, height: 44)
-            .background(isActive ? Color(accent.fill) : Theme.raised, in: Circle())
-            .opacity(configuration.isPressed ? 0.8 : 1)
+            .background(isActive ? Theme.accent : Theme.raised, in: Circle())
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
             .contentShape(Circle())
+            .animation(Motion.hover, value: configuration.isPressed)
+    }
+}
+
+/// Chip de filtro: selecionado ganha a cor de tema.
+struct ChipButtonStyle: ButtonStyle {
+    let isSelected: Bool
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(Typography.caption)
+            .foregroundStyle(isSelected ? Theme.onAccent : Theme.textPrimary)
+            .padding(.horizontal, Spacing.s + Spacing.xs)
+            .frame(minHeight: 32)
+            .background(isSelected ? Theme.accent : Theme.raised, in: Capsule())
+            .opacity(isEnabled ? (configuration.isPressed ? 0.8 : 1) : 0.4)
+            .contentShape(Capsule())
+            .animation(Motion.hover, value: isSelected)
     }
 }
 
@@ -71,7 +94,7 @@ struct CommandHint: View {
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .padding(.horizontal, Spacing.s)
                     .frame(minWidth: 24, minHeight: 22)
-                    .background(Theme.raised, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .background(Theme.raised, in: RoundedRectangle.rx(6))
             }
             Text(label)
                 .font(Typography.caption)
@@ -82,7 +105,7 @@ struct CommandHint: View {
     }
 }
 
-/// Linha de verificação na tela de emuladores: ícone de estado + texto.
+/// Linha de verificação: ícone de estado + texto.
 struct StatusLine: View {
     enum Kind {
         case ok, warning, info
@@ -98,7 +121,6 @@ struct StatusLine: View {
 
     let kind: Kind
     let text: String
-    @Environment(\.accent) private var accent
 
     var body: some View {
         Label {
@@ -108,7 +130,7 @@ struct StatusLine: View {
                 .fixedSize(horizontal: false, vertical: true)
         } icon: {
             Image(systemName: kind.symbol)
-                .foregroundStyle(kind == .ok ? Color(accent.fill) : Theme.textSecondary)
+                .foregroundStyle(kind == .ok ? Theme.accent : Theme.textSecondary)
         }
     }
 }
@@ -123,7 +145,71 @@ struct SystemBadge: View {
             .font(.system(size: size * 0.3, weight: .heavy, design: .rounded))
             .foregroundStyle(Theme.onCover)
             .frame(width: size, height: size)
-            .background(Theme.coverTone(system), in: RoundedRectangle(cornerRadius: Radius.m, style: .continuous))
+            .background(Theme.coverTone(system), in: RoundedRectangle.rx(Radius.m))
             .accessibilityHidden(true)
+    }
+}
+
+/// Foto do perfil, ou as iniciais sobre a cor de tema quando não há foto.
+struct AvatarView: View {
+    let profile: Profile
+    var size: CGFloat = 32
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        ZStack {
+            if let url = model.profiles.avatarURL(for: profile),
+               let image = NSImage(contentsOf: url) {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                Theme.accent
+                Text(profile.initials)
+                    .font(.system(size: size * 0.38, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.onAccent)
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+        .id(model.profiles.avatarRevision)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Campo de busca arredondado, no lugar do campo padrão do sistema.
+struct SearchField: View {
+    @Binding var text: String
+    var prompt: String
+    var isFocused: FocusState<Bool>.Binding
+
+    var body: some View {
+        HStack(spacing: Spacing.s) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(Theme.textSecondary)
+                .accessibilityHidden(true)
+            TextField(prompt, text: $text)
+                .textFieldStyle(.plain)
+                .font(Typography.body)
+                .foregroundStyle(Theme.textPrimary)
+                .focused(isFocused)
+            if !text.isEmpty {
+                Button {
+                    text = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Limpar busca")
+            }
+        }
+        .padding(.horizontal, Spacing.m)
+        .frame(height: 40)
+        .background(Theme.raised, in: Capsule())
+        .overlay {
+            Capsule().strokeBorder(Theme.accent.opacity(isFocused.wrappedValue ? 1 : 0), lineWidth: 2)
+        }
+        .animation(Motion.hover, value: isFocused.wrappedValue)
     }
 }

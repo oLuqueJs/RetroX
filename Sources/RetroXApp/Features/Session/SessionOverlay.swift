@@ -27,7 +27,7 @@ struct SessionOverlay: View {
                     .frame(maxWidth: 420, alignment: .leading)
                 }
                 .padding(Spacing.xl)
-                .background(Theme.surface, in: RoundedRectangle(cornerRadius: Radius.l, style: .continuous))
+                .background(Theme.surface, in: RoundedRectangle.rx(Radius.l))
                 .accessibilityElement(children: .contain)
             }
         }

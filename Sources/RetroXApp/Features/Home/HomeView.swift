@@ -11,7 +11,12 @@ struct HomeView: View {
         VStack(spacing: 0) {
             TopBar()
             content
-            HintBar()
+            HintBar(items: [
+                .init(action: .confirm, key: "↩", label: String(localized: "Jogar")),
+                .init(action: .details, key: "Espaço", label: String(localized: "Detalhes")),
+                .init(action: .favorite, key: "F", label: String(localized: "Favoritar")),
+                .init(actions: [.previousShelf, .nextShelf], key: "Q  E", label: String(localized: "Prateleira")),
+            ])
         }
         .focusable()
         .focusEffectDisabled()
@@ -21,7 +26,7 @@ struct HomeView: View {
             if game == nil { isFocused = true }
         }
         .onKeyPress(phases: [.down, .repeat]) { press in
-            guard !press.modifiers.contains(.command), let action = Self.action(for: press) else { return .ignored }
+            guard !press.modifiers.contains(.command), let action = KeyMapping.action(for: press) else { return .ignored }
             model.handle(action)
             return .handled
         }
@@ -42,7 +47,10 @@ struct HomeView: View {
             ShelfView()
         }
     }
+}
 
+/// Teclas → ações, iguais em todas as telas.
+enum KeyMapping {
     static func action(for press: KeyPress) -> InputAction? {
         switch press.key {
         case .leftArrow: return .left
@@ -61,55 +69,6 @@ struct HomeView: View {
         case "m": return .menu
         default: return nil
         }
-    }
-}
-
-private struct TopBar: View {
-    @Environment(AppModel.self) private var model
-
-    var body: some View {
-        HStack(spacing: Spacing.m) {
-            Text("RetroX")
-                .font(.system(size: 20, weight: .heavy, design: .rounded))
-                .foregroundStyle(Theme.textPrimary)
-            Spacer()
-            if model.library.isScanning || model.plugins.entries.contains(where: \.isDiscovering) {
-                HStack(spacing: Spacing.s) {
-                    ProgressView().controlSize(.small)
-                    Text("Atualizando biblioteca…")
-                        .font(Typography.caption)
-                        .foregroundStyle(Theme.textSecondary)
-                }
-            }
-            if let controller = model.input.controllerName {
-                Image(systemName: "gamecontroller.fill")
-                    .foregroundStyle(Theme.textSecondary)
-                    .help(controller)
-                    .accessibilityLabel("Controle conectado: \(controller)")
-            }
-            TimelineView(.everyMinute) { context in
-                Text(context.date, format: .dateTime.hour().minute().locale(AppLocale.current))
-                    .font(Typography.bodyEmphasis)
-                    .monospacedDigit()
-                    .foregroundStyle(Theme.textPrimary)
-            }
-            Button {
-                model.screen = .emulators
-            } label: {
-                Label("Emuladores", systemImage: "puzzlepiece.extension")
-            }
-            .buttonStyle(SecondaryButtonStyle())
-            SettingsLink {
-                Image(systemName: "gearshape")
-            }
-            .buttonStyle(IconButtonStyle())
-            .accessibilityLabel("Ajustes")
-        }
-        // Espaço para os botões da janela (a barra de título fica escondida).
-        .padding(.leading, 88)
-        .padding(.trailing, Spacing.xl)
-        .padding(.top, Spacing.m)
-        .frame(height: 72)
     }
 }
 
@@ -133,7 +92,7 @@ private struct StageView: View {
                     }
                     .padding(.horizontal, Spacing.xxl)
                     .id(game.id)
-                    .transition(.opacity)
+                    .transition(.opacity.combined(with: .offset(x: reduceMotion ? 0 : 12)))
                 } else {
                     EmptyShelfMessage(shelf: model.library.shelf)
                         .padding(.horizontal, Spacing.xxl)
@@ -153,7 +112,7 @@ private struct StageDetails: View {
     var body: some View {
         let history = model.library.history(for: game)
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text(overline)
+            Text(GameText.overline(game, emulator: model.plugins.entry(game.pluginID)?.plugin.displayName))
                 .font(Typography.caption)
                 .tracking(1.4)
                 .foregroundStyle(Theme.textSecondary)
@@ -162,7 +121,7 @@ private struct StageDetails: View {
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
-            Text(Self.metadata(game: game, history: history))
+            Text(GameText.metadata(game: game, history: history))
                 .font(Typography.body)
                 .foregroundStyle(Theme.textSecondary)
             HStack(spacing: Spacing.s) {
@@ -180,7 +139,7 @@ private struct StageDetails: View {
                 .buttonStyle(IconButtonStyle(isActive: history.isFavorite))
                 .accessibilityLabel(history.isFavorite ? "Remover dos favoritos" : "Favoritar")
                 Button {
-                    model.detailsGame = game
+                    model.showDetails(game)
                 } label: {
                     Image(systemName: "info")
                 }
@@ -191,26 +150,29 @@ private struct StageDetails: View {
         }
         .frame(maxWidth: 520, alignment: .leading)
     }
+}
 
-    private var overline: String {
+/// Textos de jogo repetidos em várias telas.
+enum GameText {
+    static func overline(_ game: Game, emulator: String?) -> String {
         let system = SystemCatalog.system(game.systemID)?.displayName ?? game.systemID.rawValue
-        let emulator = model.plugins.entry(game.pluginID)?.plugin.displayName ?? ""
-        return "\(system) · \(emulator)".uppercased()
+        return [system, emulator].compactMap { $0 }.joined(separator: " · ").uppercased()
+    }
+
+    static func lastPlayed(_ history: GameHistory) -> String {
+        guard let last = history.lastPlayedAt else { return String(localized: "Ainda não jogado") }
+        let relative = RelativeDateTimeFormatter()
+        relative.locale = AppLocale.current
+        relative.unitsStyle = .full
+        return String(localized: "Jogado \(relative.localizedString(for: last, relativeTo: .now))")
+    }
+
+    static func size(_ game: Game) -> String {
+        game.fileSize.formatted(.byteCount(style: .file).locale(AppLocale.current))
     }
 
     static func metadata(game: Game, history: GameHistory) -> String {
-        var parts: [String] = []
-        if let last = history.lastPlayedAt {
-            let relative = RelativeDateTimeFormatter()
-            relative.locale = AppLocale.current
-            relative.unitsStyle = .full
-            parts.append(String(localized: "Jogado \(relative.localizedString(for: last, relativeTo: .now))"))
-        } else {
-            parts.append(String(localized: "Ainda não jogado"))
-        }
-        parts.append(game.fileSize.formatted(.byteCount(style: .file).locale(AppLocale.current)))
-        parts.append(game.fileExtension)
-        return parts.joined(separator: " · ")
+        [lastPlayed(history), size(game), game.fileExtension].joined(separator: " · ")
     }
 }
 
@@ -233,14 +195,13 @@ private struct EmptyShelfMessage: View {
 }
 
 /// Estados de tela inteira: sem emulador, procurando jogos, nenhum jogo encontrado.
-private struct EmptyHome: View {
+struct EmptyHome: View {
     enum Kind {
         case noEmulator, loading, noGames
     }
 
     let kind: Kind
     @Environment(AppModel.self) private var model
-    @Environment(\.accent) private var accent
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
@@ -250,7 +211,7 @@ private struct EmptyHome: View {
             } else {
                 Image(systemName: kind == .noEmulator ? "puzzlepiece.extension" : "tray")
                     .font(.system(size: 34, weight: .semibold))
-                    .foregroundStyle(Color(accent.fill))
+                    .foregroundStyle(Theme.accent)
                     .accessibilityHidden(true)
             }
             Text(title)
@@ -293,23 +254,41 @@ private struct EmptyHome: View {
     }
 }
 
-private struct HintBar: View {
+/// Barra de comandos no rodapé: mostra os glifos do controle conectado ou as teclas.
+struct HintBar: View {
+    struct Item {
+        let actions: [InputAction]
+        let key: String
+        let label: String
+
+        init(action: InputAction, key: String, label: String) {
+            self.init(actions: [action], key: key, label: label)
+        }
+
+        init(actions: [InputAction], key: String, label: String) {
+            self.actions = actions
+            self.key = key
+            self.label = label
+        }
+    }
+
+    let items: [Item]
+    var showsMenu = true
     @Environment(AppModel.self) private var model
 
     var body: some View {
         let glyphs = model.input.glyphs
         HStack(spacing: Spacing.l) {
-            CommandHint(glyphs: glyphs[.confirm].map { [$0] }, key: "↩", label: String(localized: "Jogar"))
-            CommandHint(glyphs: glyphs[.details].map { [$0] }, key: "Espaço", label: String(localized: "Detalhes"))
-            CommandHint(glyphs: glyphs[.favorite].map { [$0] }, key: "F", label: String(localized: "Favoritar"))
-            CommandHint(
-                glyphs: [glyphs[.previousShelf], glyphs[.nextShelf]].allSatisfy { $0 != nil }
-                    ? [glyphs[.previousShelf]!, glyphs[.nextShelf]!] : nil,
-                key: "Q  E",
-                label: String(localized: "Prateleira")
-            )
+            ForEach(items, id: \.label) { item in
+                // Atalho só de teclado (sem ação) ou controle sem glifo para todas as ações: mostra a tecla.
+                let symbols = item.actions.compactMap { glyphs[$0] }
+                let hasGlyphs = !item.actions.isEmpty && symbols.count == item.actions.count
+                CommandHint(glyphs: hasGlyphs ? symbols : nil, key: item.key, label: item.label)
+            }
             Spacer()
-            CommandHint(glyphs: glyphs[.menu].map { [$0] }, key: "M", label: String(localized: "Emuladores"))
+            if showsMenu {
+                CommandHint(glyphs: glyphs[.menu].map { [$0] }, key: "M", label: String(localized: "Emuladores"))
+            }
         }
         .padding(.horizontal, Spacing.xxl)
         .frame(height: 48)

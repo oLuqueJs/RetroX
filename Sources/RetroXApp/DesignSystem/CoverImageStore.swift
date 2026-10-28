@@ -15,6 +15,11 @@ final class CoverImageStore {
         url.flatMap { images[$0] }
     }
 
+    /// Esquece a imagem guardada (a capa foi trocada no mesmo endereço).
+    func invalidate(_ url: URL) {
+        images[url] = nil
+    }
+
     func load(_ url: URL) async {
         guard images[url] == nil, inFlight.insert(url).inserted else { return }
         let cgImage = await Task.detached(priority: .utility) {

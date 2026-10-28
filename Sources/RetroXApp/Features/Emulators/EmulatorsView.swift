@@ -94,7 +94,7 @@ private struct PluginCard: View {
             }
         }
         .padding(Spacing.l)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Radius.l, style: .continuous))
+        .background(Theme.surface, in: RoundedRectangle.rx(Radius.l))
     }
 
     private var rootFolder: some View {
@@ -135,6 +135,10 @@ private struct DiscoveryReport: View {
                 gamesLines
                 coversLine
                 biosLine
+                achievementsLine
+                if let controller = discovery.controller {
+                    ControllerMapping(controller: controller, emulator: entry.plugin.displayName)
+                }
                 ForEach(Array(otherIssues.enumerated()), id: \.offset) { _, issue in
                     StatusLine(kind: .warning, text: issue.message)
                 }
@@ -218,6 +222,21 @@ private struct DiscoveryReport: View {
         }
     }
 
+    /// Estado do RetroAchievements no emulador. A conta é escolhida e conectada no próprio emulador.
+    @ViewBuilder
+    private var achievementsLine: some View {
+        if let status = discovery.achievements {
+            switch (status.isEnabled, status.username) {
+            case (false, _):
+                StatusLine(kind: .info, text: String(localized: "RetroAchievements desligado no \(entry.plugin.displayName)."))
+            case (true, nil):
+                StatusLine(kind: .warning, text: String(localized: "RetroAchievements ligado, mas sem conta conectada no \(entry.plugin.displayName)."))
+            case (true, let username?):
+                StatusLine(kind: .ok, text: String(localized: "RetroAchievements: conectado como \(username)\(status.isHardcore ? String(localized: " · hardcore") : "")"))
+            }
+        }
+    }
+
     private var otherIssues: [PluginIssue] {
         discovery.issues.filter {
             switch $0 {
@@ -244,7 +263,7 @@ private struct UpcomingCard: View {
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 48, height: 48)
-                .background(Theme.raised, in: RoundedRectangle(cornerRadius: Radius.m, style: .continuous))
+                .background(Theme.raised, in: RoundedRectangle.rx(Radius.m))
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(upcoming.name)
@@ -263,7 +282,7 @@ private struct UpcomingCard: View {
                 .background(Theme.raised, in: Capsule())
         }
         .padding(Spacing.l)
-        .background(Theme.surface.opacity(0.6), in: RoundedRectangle(cornerRadius: Radius.l, style: .continuous))
+        .background(Theme.surface.opacity(0.6), in: RoundedRectangle.rx(Radius.l))
         .accessibilityElement(children: .combine)
     }
 }
@@ -271,4 +290,69 @@ private struct UpcomingCard: View {
 private func abbreviated(_ url: URL) -> String {
     (url.path(percentEncoded: false).trimmingCharacters(in: CharacterSet(charactersIn: "/")).isEmpty
         ? "/" : (url.path(percentEncoded: false) as NSString).abbreviatingWithTildeInPath)
+}
+
+/// O mapeamento do controle configurado no emulador, só para conferir (não é alterado aqui).
+private struct ControllerMapping: View {
+    let controller: ControllerSummary
+    let emulator: String
+
+    var body: some View {
+        DisclosureGroup {
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: Spacing.m, verticalSpacing: Spacing.xs) {
+                ForEach(controller.bindings, id: \.self) { binding in
+                    GridRow {
+                        Text(Self.ps2Name(binding.button))
+                            .font(Typography.bodyEmphasis)
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(Self.inputName(binding.input))
+                            .font(Typography.body)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+            }
+            .padding(.top, Spacing.s)
+            .padding(.leading, Spacing.l)
+        } label: {
+            StatusLine(kind: .ok, text: String(localized: "Controle no \(emulator): \(controller.type)\(controller.device.map { " · \($0)" } ?? "")"))
+        }
+    }
+
+    static func ps2Name(_ button: String) -> String {
+        switch button {
+        case "Cross": "×"
+        case "Circle": "○"
+        case "Square": "□"
+        case "Triangle": "△"
+        case "Up": "↑"
+        case "Down": "↓"
+        case "Left": "←"
+        case "Right": "→"
+        default: button
+        }
+    }
+
+    /// "SDL-0/FaceSouth" → "botão de baixo (A / ×)".
+    static func inputName(_ input: String) -> String {
+        let name = input.split(separator: "/").last.map(String.init) ?? input
+        let names: [String: String] = [
+            "FaceSouth": String(localized: "botão de baixo (A / ×)"),
+            "FaceEast": String(localized: "botão da direita (B / ○)"),
+            "FaceWest": String(localized: "botão da esquerda (X / □)"),
+            "FaceNorth": String(localized: "botão de cima (Y / △)"),
+            "DPadUp": String(localized: "direcional ↑"),
+            "DPadDown": String(localized: "direcional ↓"),
+            "DPadLeft": String(localized: "direcional ←"),
+            "DPadRight": String(localized: "direcional →"),
+            "LeftShoulder": "LB / L1",
+            "RightShoulder": "RB / R1",
+            "+LeftTrigger": "LT / L2",
+            "+RightTrigger": "RT / R2",
+            "LeftStick": String(localized: "clique do analógico esquerdo"),
+            "RightStick": String(localized: "clique do analógico direito"),
+            "Back": "Select / View",
+            "Start": "Start / Menu",
+        ]
+        return names[name] ?? input
+    }
 }

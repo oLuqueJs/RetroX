@@ -22,9 +22,9 @@ struct CoverArtView: View {
             }
         }
         .frame(width: width, height: width * Self.aspectRatio)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.m, style: .continuous))
+        .clipShape(RoundedRectangle.rx(Radius.m))
         .overlay {
-            RoundedRectangle(cornerRadius: Radius.m, style: .continuous)
+            RoundedRectangle.rx(Radius.m)
                 .strokeBorder(.white.opacity(0.06), lineWidth: 1)
         }
         .task(id: game.coverURL) {

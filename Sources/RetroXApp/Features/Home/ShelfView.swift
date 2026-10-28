@@ -42,7 +42,7 @@ struct ShelfView: View {
 
 private struct ShelfTabs: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.accent) private var accent
+    @Namespace private var underline
 
     var body: some View {
         let library = model.library
@@ -50,15 +50,21 @@ private struct ShelfTabs: View {
             ForEach(library.shelves) { shelf in
                 let isSelected = shelf == library.shelf
                 Button {
-                    library.select(shelf)
+                    withAnimation(Motion.focus) { library.select(shelf) }
                 } label: {
                     VStack(spacing: Spacing.xs) {
                         Text(shelf.title)
                             .font(Typography.bodyEmphasis)
                             .foregroundStyle(isSelected ? Theme.textPrimary : Theme.textSecondary)
-                        Capsule()
-                            .fill(isSelected ? Color(accent.fill) : .clear)
-                            .frame(width: 20, height: 3)
+                        ZStack {
+                            Capsule().fill(.clear).frame(width: 20, height: 3)
+                            if isSelected {
+                                Capsule()
+                                    .fill(Theme.accent)
+                                    .frame(width: 20, height: 3)
+                                    .matchedGeometryEffect(id: "underline", in: underline)
+                            }
+                        }
                     }
                     .contentShape(Rectangle())
                 }
@@ -82,32 +88,36 @@ private struct ShelfTile: View {
     let game: Game
     let isFocused: Bool
     @Environment(AppModel.self) private var model
-    @Environment(\.accent) private var accent
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        let lifts = isFocused && !reduceMotion
+        let isHovered = model.browser.hoveredGameID == game.id && !isFocused
+        let lifts = !reduceMotion && (isFocused || isHovered)
         VStack(spacing: 0) {
             CoverArtView(game: game, width: ShelfView.tileWidth)
                 .overlay {
-                    RoundedRectangle(cornerRadius: Radius.m + 5, style: .continuous)
-                        .strokeBorder(Color(accent.fill), lineWidth: 3)
+                    RoundedRectangle.rx(Radius.m + 5)
+                        .strokeBorder(Theme.accent, lineWidth: 3)
                         .padding(-6)
                         .opacity(isFocused ? 1 : 0)
                 }
                 .shadow(
-                    color: isFocused ? Color(accent.fill).opacity(0.45) : .black.opacity(0.16),
-                    radius: isFocused ? 22 : 6,
-                    y: isFocused ? 10 : 3
+                    color: isFocused ? Theme.accent.opacity(0.45) : .black.opacity(isHovered ? 0.24 : 0.14),
+                    radius: isFocused ? 22 : (isHovered ? 12 : 6),
+                    y: isFocused ? 10 : 4
                 )
-                .scaleEffect(lifts ? 1.1 : 1, anchor: .bottom)
-                .offset(y: lifts ? -6 : 0)
+                .scaleEffect(lifts ? (isFocused ? 1.1 : 1.04) : 1, anchor: .bottom)
+                .offset(y: lifts ? (isFocused ? -6 : -2) : 0)
             Reflection(game: game)
                 .opacity(isFocused ? 1 : 0)
         }
         .animation(Motion.animation(reduceMotion: reduceMotion), value: isFocused)
+        .animation(Motion.hover, value: isHovered)
         .contentShape(Rectangle())
-        .onTapGesture { model.library.focus(game) }
+        .onHover { inside in
+            model.browser.hoveredGameID = inside ? game.id : (model.browser.hoveredGameID == game.id ? nil : model.browser.hoveredGameID)
+        }
+        .onTapGesture { withAnimation(Motion.focus) { model.library.focus(game) } }
         .simultaneousGesture(TapGesture(count: 2).onEnded { model.play(game) })
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
@@ -119,7 +129,7 @@ private struct ShelfTile: View {
 
     private var accessibilityLabel: String {
         let system = SystemCatalog.system(game.systemID)?.shortName ?? ""
-        let favorite = model.library.history(for: game).isFavorite ? String(localized: ", favorito") : ""
+        let favorite = model.library.isFavorite(game) ? String(localized: ", favorito") : ""
         return "\(game.title), \(system)\(favorite)"
     }
 }

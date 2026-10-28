@@ -17,6 +17,11 @@ final class InputCoordinator {
     private(set) var controllerName: String?
     /// Símbolos SF do controle conectado para cada ação (ex.: "xmark.circle" num controle PlayStation).
     private(set) var glyphs: [InputAction: String] = [:]
+    /// Layout estilo Nintendo: o botão da direita confirma e o de baixo volta.
+    private(set) var swapsConfirmAndBack: Bool
+    /// Última ação recebida do controle e um contador, para o teste nos Ajustes.
+    private(set) var lastAction: InputAction?
+    private(set) var actionCount = 0
 
     @ObservationIgnored var onAction: ((InputAction) -> Void)?
     @ObservationIgnored private var heldDirection: InputAction?
@@ -27,6 +32,7 @@ final class InputCoordinator {
     static let repeatInterval: Duration = .milliseconds(90)
 
     init() {
+        swapsConfirmAndBack = UserDefaults.standard.bool(forKey: "input.swapConfirmBack")
         // Com o emulador na frente, o RetroX não deve receber nada do controle (é o default; fica explícito).
         GCController.shouldMonitorBackgroundEvents = false
         let center = NotificationCenter.default
@@ -49,8 +55,9 @@ final class InputCoordinator {
         pad.leftThumbstick.valueChangedHandler = { [weak self] _, x, y in
             MainActor.assumeIsolated { self?.hold(Self.direction(x: x, y: y, threshold: 0.6)) }
         }
+        let (south, east): (InputAction, InputAction) = swapsConfirmAndBack ? (.back, .confirm) : (.confirm, .back)
         let buttons: [(GCControllerButtonInput?, InputAction)] = [
-            (pad.buttonA, .confirm), (pad.buttonB, .back), (pad.buttonX, .details), (pad.buttonY, .favorite),
+            (pad.buttonA, south), (pad.buttonB, east), (pad.buttonX, .details), (pad.buttonY, .favorite),
             (pad.leftShoulder, .previousShelf), (pad.rightShoulder, .nextShelf), (pad.buttonMenu, .menu),
         ]
         for (button, action) in buttons {
@@ -75,7 +82,15 @@ final class InputCoordinator {
         }
     }
 
+    func setSwapsConfirmAndBack(_ swaps: Bool) {
+        swapsConfirmAndBack = swaps
+        UserDefaults.standard.set(swaps, forKey: "input.swapConfirmBack")
+        refreshCurrentController()
+    }
+
     private func send(_ action: InputAction) {
+        lastAction = action
+        actionCount += 1
         onAction?(action)
     }
 
