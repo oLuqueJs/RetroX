@@ -25,6 +25,6 @@ if [[ -d "$resources/Contents/Resources" ]]; then resources="$resources/Contents
 require_file "$resources/Resources/RayoMark.png"
 test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")" = "${version%%[-+]*}"
 test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Contents/Info.plist")" = RetroX
-lipo -verify_arch "$arch" "$app/Contents/MacOS/RetroX"
+lipo "$app/Contents/MacOS/RetroX" -verify_arch "$arch"
 codesign --verify --deep --strict "$app"
 printf 'Pacote validado: %s\n' "$archive"
