@@ -9,11 +9,17 @@
 RetroX é um launcher nativo para macOS que reúne numa biblioteca visual os jogos de vários consoles e abre cada um no emulador externo que você já tem instalado. Funciona todo pelo teclado ou pelo controle, com perfis, temas e uma prateleira no estilo de console. O RetroX não inclui emuladores, jogos, BIOS nem chaves, e nunca copia, move ou altera os seus arquivos de jogo.
 
 <div align="center">
-  <img src="https://img.shields.io/github/actions/workflow/status/oLuqueJs/RetroX/tests.yml?style=flat&label=testes" />
-  <img src="https://img.shields.io/github/v/release/oLuqueJs/RetroX?style=flat" />
-  <img src="https://img.shields.io/github/license/oLuqueJs/RetroX?style=flat" />
-  <img src="https://img.shields.io/github/commit-activity/w/oLuqueJs/RetroX?style=flat" />
-  <img src="https://img.shields.io/github/stars/oLuqueJs/RetroX?style=flat" />
+  <a href="https://www.swift.org/"><img alt="Swift" src="https://img.shields.io/badge/swift-%23F54A2A.svg?style=for-the-badge&amp;logo=swift&amp;logoColor=white" /></a>
+  <a href="https://www.apple.com/macos/"><img alt="macOS" src="https://img.shields.io/badge/mac%20os-%23000000.svg?style=for-the-badge&amp;logo=macos&amp;logoColor=F0F0F0&amp;logoSize=auto" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&amp;logo=githubactions&amp;logoColor=white" /></a>
+</div>
+
+<div align="center">
+  <a href="https://github.com/oLuqueJs/RetroX/actions/workflows/tests.yml"><img alt="Status do workflow de testes" src="https://img.shields.io/github/actions/workflow/status/oLuqueJs/RetroX/tests.yml?style=flat&amp;label=testes" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/releases"><img alt="Versão da release" src="https://img.shields.io/github/v/release/oLuqueJs/RetroX?style=flat" /></a>
+  <a href="./LICENSE"><img alt="Licença" src="https://img.shields.io/github/license/oLuqueJs/RetroX?style=flat" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/commits/main/"><img alt="Atividade semanal de commits" src="https://img.shields.io/github/commit-activity/w/oLuqueJs/RetroX?style=flat" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/stargazers"><img alt="Estrelas no GitHub" src="https://img.shields.io/github/stars/oLuqueJs/RetroX?style=flat" /></a>
 </div>
 
 ---
