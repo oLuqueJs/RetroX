@@ -56,14 +56,26 @@ SF Pro Rounded para títulos (tom de console), SF Pro para o resto. No máximo q
 Na prateleira, a capa em foco sobe 10%, ganha um halo na cor de tema e se reflete no "chão" da prateleira. Com Reduzir Movimento, fica só o anel de foco: nada cresce nem se desloca.
 
 ## Movimento
-- Foco: `snappy` (0,28 s, pouco quique).
-- Hover: `smooth` (0,22 s), com elevação leve (escala 1,03–1,04).
-- Trocas de tela: esmaecimento de 0,18 s.
-- Abas e seletor de layout deslizam a pílula selecionada (`matchedGeometryEffect`).
-- Com Reduzir Movimento, só esmaece: nada cresce nem se desloca.
+- Foco: `snappy` (0,32 s, quique quase imperceptível).
+- Hover: `smooth` (0,24 s), com elevação leve (escala 1,03–1,04).
+- Troca de aba: o conteúdo novo entra deslizando 48 pt pelo lado da aba escolhida (`smooth`, 0,45 s); a barra de cima fica parada.
+- Entrar num perfil: a tela inicial aproxima (escala 1,04 → 1).
+- Cartões (detalhes, perfil): crescem de 0,94 e sobem 16 pt enquanto o fundo escurece.
+- Carrossel: as capas vizinhas encolhem 16% por posição e inclinam 38° em 3D.
+- Fundo ambiente: a capa em foco, desfocada, troca em 0,7 s.
+- Abertura: anel desenhado em 0,9 s em volta do símbolo, que entra com mola; o nome entra letra a letra (60 ms entre letras).
+- O perfil escolhe o nível (completas, reduzidas, desligadas) e a velocidade (calma ×1,35, normal, rápida ×0,7). Com animações reduzidas ou o Reduzir Movimento do macOS, só esmaece: nada cresce, desliza nem inclina.
 
 ## Telas
-Perfis ("Quem vai jogar?", avatares de 128 pt com anel de foco), Início (palco + prateleira), Biblioteca (grade com quatro layouts: Capas 128 pt, Capas grandes 184 pt, Capas e nomes 148 pt, Lista), Emuladores, Detalhes (folha de 880 × 620) e Ajustes (Aparência e Controle).
+- **Perfis** ("Quem vai jogar?", avatares de 128 pt com anel de foco).
+- **Início**, em três visualizações à escolha do perfil: Prateleira (palco + prateleira), Carrossel e Grade.
+- **Biblioteca**: Capas pequenas 96 pt, Capas 128 pt, Capas grandes 184 pt, Capas e nomes 148 pt, Lista.
+- **Emuladores**: ícone do app instalado, selo de estado e blocos de resumo.
+- **Ajustes**: seções à esquerda, linhas `‹ valor ›` à direita.
+- **Detalhes**: cartão de 880 × 620.
+
+## Texto
+O perfil escolhe a fonte (Arredondada, Padrão, Serifada, Monoespaçada) e o tamanho (90%, 100%, 112%, 125%). Na Arredondada, só os títulos são arredondados; o corpo fica na fonte padrão.
 
 ## Voz
 Português do Brasil, direto e calmo. Mensagens de erro dizem o que aconteceu e oferecem a ação que resolve.

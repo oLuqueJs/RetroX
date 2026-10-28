@@ -10,8 +10,13 @@ Launcher nativo para macOS que reúne numa biblioteca visual os jogos de vários
 2. Vá em **Emuladores**, ative o **PCSX2** e escolha a pasta dele: a que tem o `PCSX2.app` e as pastas de jogos (por exemplo `~/Emulators/ps2`, com `roms/` e `covers/`). O RetroX também usa as pastas de jogos, as capas (inclusive as que o PCSX2 baixa) e a BIOS que o próprio PCSX2 já conhece.
 3. Em **Início**, navegue pela prateleira; em **Biblioteca**, veja todos os jogos em grade ou lista, com busca e filtro por console. Pressione **Return** (ou o botão de confirmar) para jogar. Quando o PCSX2 fecha, o RetroX volta para a frente.
 4. Em **Detalhes**, troque a capa de um jogo ou busque informações na Wikipedia.
+5. Em **Ajustes**, escolha tema, fonte, visualização da tela inicial (Prateleira, Carrossel ou Grade), animações e o tipo de controle. Cada perfil guarda os seus.
 
-Teclado: setas navegam, Q/E troca de prateleira ou de console, Espaço abre os detalhes, F favorita, / busca na Biblioteca, M abre Emuladores, Esc volta. Nada nas pastas dos jogos é copiado, movido ou alterado.
+Teclado: setas navegam, `[` `]` (ou ⌘1–⌘4) trocam de aba, Q/E troca de prateleira ou de console, Espaço abre os detalhes, F favorita, / busca na Biblioteca, M (ou ⌘,) abre os Ajustes, Esc volta.
+
+Controle: o app inteiro funciona pelo controle. O botão de baixo confirma (o da direita no layout Nintendo), o da direita volta, os gatilhos trocam de aba, Start abre os Ajustes. Em Ajustes > Controle dá para escolher os glifos de Xbox, PlayStation (DualSense) ou Switch.
+
+Nada nas pastas dos jogos é copiado, movido ou alterado.
 
 ## Requisitos
 
