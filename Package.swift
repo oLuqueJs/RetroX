@@ -1,0 +1,21 @@
+// swift-tools-version: 6.0
+import PackageDescription
+
+let package = Package(
+    name: "RetroX",
+    platforms: [.macOS(.v14)],
+    products: [
+        .executable(name: "RetroX", targets: ["RetroXApp"]),
+        .executable(name: "rx-launch-probe", targets: ["RXLaunchProbe"]),
+        .executable(name: "rx-fake-emulator", targets: ["RXFakeEmulator"]),
+    ],
+    targets: [
+        // Regras de negócio, sem SwiftUI e sem SwiftData: compila e testa só com as Command Line Tools.
+        .target(name: "RetroXCore"),
+        .executableTarget(name: "RetroXApp", dependencies: ["RetroXCore"], resources: [.copy("Resources")]),
+        // Ferramentas de desenvolvimento; não fazem parte do app distribuído.
+        .executableTarget(name: "RXLaunchProbe", dependencies: ["RetroXCore"]),
+        .executableTarget(name: "RXFakeEmulator"),
+        .testTarget(name: "RetroXCoreTests", dependencies: ["RetroXCore"]),
+    ]
+)

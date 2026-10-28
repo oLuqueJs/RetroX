@@ -15,3 +15,6 @@ local/
 
 # Artefatos gerados por scripts
 /dist/
+
+# Dependências da automação de release
+node_modules/
