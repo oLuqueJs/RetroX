@@ -65,7 +65,7 @@ struct BrandMark: View {
                 .resizable()
                 .interpolation(.high)
                 .frame(width: size, height: size)
-                .shadow(color: .black.opacity(0.18), radius: size * 0.08, y: size * 0.04)
+                .shadow(color: .black.opacity(0.18), radius: max(1, size * 0.08), y: size * 0.04)
         } else {
             RoundedRectangle.rx(size * 0.29)
                 .fill(Theme.accent)

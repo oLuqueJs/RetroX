@@ -7,19 +7,16 @@ struct TopBar: View {
 
     var body: some View {
         HStack(spacing: Spacing.m) {
-            HStack(spacing: Spacing.s) {
-                if let avatar = Brand.avatar {
-                    Image(nsImage: avatar)
-                        .resizable()
-                        .interpolation(.high)
-                        .frame(width: 28, height: 28)
-                        .overlay(Circle().strokeBorder(Theme.divider, lineWidth: 1))
-                        .accessibilityHidden(true)
-                }
-                Text("RetroX")
+            // Tile (não círculo), para não ser confundido com a foto do perfil à direita.
+            HStack(spacing: 10) {
+                BrandMark(size: 30)
+                    .accessibilityHidden(true)
+                (Text("Retro").foregroundStyle(Theme.textPrimary) + Text("X").foregroundStyle(Theme.accent))
                     .font(.system(size: 20, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
+                    .tracking(-0.3)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("RetroX")
             ScreenTabs()
                 .padding(.leading, Spacing.s)
             Spacer()
