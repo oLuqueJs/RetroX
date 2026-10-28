@@ -8,7 +8,6 @@
 <div align="center">
   <a href="https://www.swift.org/"><img alt="Swift" src="https://img.shields.io/badge/swift-%23F54A2A.svg?style=flat-square&amp;logo=swift&amp;logoColor=white" /></a>
   <a href="https://www.apple.com/macos/"><img alt="macOS" src="https://img.shields.io/badge/mac%20os-%23000000.svg?style=flat-square&amp;logo=macos&amp;logoColor=F0F0F0&amp;logoSize=auto" /></a>
-  <a href="https://github.com/oLuqueJs/RetroX/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/github%20actions-%232671E5.svg?style=flat-square&amp;logo=githubactions&amp;logoColor=white" /></a>
 </div>
 
 <div align="center">
