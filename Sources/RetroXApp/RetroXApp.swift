@@ -91,7 +91,7 @@ struct RootView: View {
             }
             if model.splash != .done {
                 SplashView()
-                    .transition(.splashExit)
+                    .transition(.opacity)
                     .zIndex(30)
             }
         }

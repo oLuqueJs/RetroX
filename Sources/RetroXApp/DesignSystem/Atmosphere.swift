@@ -2,108 +2,42 @@ import AppKit
 import RetroXCore
 import SwiftUI
 
-/// Abertura do app, em três tempos: a Rayo sobe do desfoque sobre um halo na cor de tema e um brilho
-/// atravessa o tile; "Retro" assenta logo abaixo e o "X" gira até o lugar; o conjunto se dissolve
-/// (com um leve zoom) revelando a tela de perfis. Com Reduzir Movimento, só esmaece.
-/// Composição empilhada do kit: tile = 3 × altura das maiúsculas, vão até as maiúsculas = 1 × a altura.
+/// Abertura do app: um gesto só. A Rayo aparece e o nome desliza de trás dela, na assinatura horizontal
+/// do kit (a mesma da barra superior); depois tudo esmaece revelando a tela de perfis. Com Reduzir
+/// Movimento, os dois só esmaecem.
 struct SplashView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private static let wordSize: CGFloat = 44
+    private static let wordSize: CGFloat = 40
 
     var body: some View {
         let shown = model.splash == .revealed
         let moves = Motion.allowsMovement(reduceMotion: reduceMotion)
         let metrics = Brand.Metrics(size: Self.wordSize)
-        let tile = 3 * metrics.capHeight
         let f = Motion.settings.factor
         ZStack {
             Theme.background
                 .ignoresSafeArea()
-            VStack(spacing: metrics.capHeight - metrics.aboveCaps) {
-                BrandMark(size: tile)
-                    .overlay { shine(tile: tile, shown: shown && moves, factor: f) }
-                    .scaleEffect(shown || !moves ? 1 : 0.84)
-                    .offset(y: shown || !moves ? 0 : 16)
-                    .blur(radius: shown || !moves ? 0 : 12)
+            HStack(alignment: .center, spacing: 0.75 * metrics.capHeight - metrics.leftBearing) {
+                BrandMark(size: 2 * metrics.capHeight)
+                    .scaleEffect(shown || !moves ? 1 : 0.9)
                     .opacity(shown ? 1 : 0)
-                    .animation(moves ? .spring(response: 0.7 * f, dampingFraction: 0.8) : Motion.fade, value: shown)
-                    // No fundo, e não numa ZStack: o halo é maior que o tile e não pode afastar o nome.
-                    .background { halo(tile: tile, shown: shown, moves: moves, factor: f) }
-                HStack(spacing: 0) {
-                    Text("Retro")
-                        .foregroundStyle(Theme.textPrimary)
-                        .offset(y: shown || !moves ? 0 : 10)
-                        .blur(radius: shown || !moves ? 0 : 6)
-                        .opacity(shown ? 1 : 0)
-                        .animation((moves ? Animation.smooth(duration: 0.6 * f) : .easeOut(duration: 0.3)).delay(0.28 * f), value: shown)
-                    Text("X")
-                        .foregroundStyle(Theme.accent)
-                        .padding(.leading, Brand.oxKern * Self.wordSize)
-                        .scaleEffect(shown || !moves ? 1 : 0.3)
-                        .rotationEffect(.degrees(shown || !moves ? 0 : -135))
-                        .opacity(shown ? 1 : 0)
-                        .animation((moves ? Animation.spring(response: 0.55 * f, dampingFraction: 0.62) : .easeOut(duration: 0.3)).delay(0.5 * f), value: shown)
-                }
-                .font(Brand.font(Self.wordSize))
-                .kerning(-0.015 * Self.wordSize)
-                Text("Seus jogos, num lugar só.")
-                    .font(Typography.body)
-                    .foregroundStyle(Theme.textSecondary)
-                    .padding(.top, Spacing.xs)
-                    .offset(y: shown || !moves ? 0 : 6)
+                    .animation(moves ? .smooth(duration: 0.5 * f) : Motion.fade, value: shown)
+                    .zIndex(1)
+                BrandWordmark(size: Self.wordSize)
+                    .alignmentGuide(VerticalAlignment.center) { $0[.firstTextBaseline] - metrics.capHeight / 2 }
+                    .offset(x: shown || !moves ? 0 : -metrics.capHeight)
                     .opacity(shown ? 1 : 0)
-                    .animation(.easeOut(duration: 0.5 * f).delay(0.8 * f), value: shown)
+                    // O nome sai de trás do tile: a máscara abre da esquerda para a direita.
+                    .mask(alignment: .leading) {
+                        Rectangle().scaleEffect(x: shown || !moves ? 1 : 0, anchor: .leading)
+                    }
+                    .animation((moves ? Animation.smooth(duration: 0.6 * f) : .easeOut(duration: 0.3)).delay(0.25 * f), value: shown)
             }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("RetroX")
-    }
-
-    /// Brilho difuso na cor de tema, que abre atrás do tile.
-    private func halo(tile: CGFloat, shown: Bool, moves: Bool, factor: Double) -> some View {
-        Circle()
-            .fill(RadialGradient(colors: [Theme.accent.opacity(0.22), Theme.accent.opacity(0)], center: .center,
-                                 startRadius: tile * 0.3, endRadius: tile * 1.5))
-            .frame(width: tile * 3, height: tile * 3)
-            .scaleEffect(shown || !moves ? 1 : 0.35)
-            .opacity(shown ? 1 : 0)
-            .animation(.smooth(duration: 1.1 * factor).delay(0.05 * factor), value: shown)
-            .allowsHitTesting(false)
-    }
-
-    /// Faixa de luz que atravessa o tile na diagonal, uma vez.
-    private func shine(tile: CGFloat, shown: Bool, factor: Double) -> some View {
-        LinearGradient(colors: [.white.opacity(0), .white.opacity(0.28), .white.opacity(0)], startPoint: .leading, endPoint: .trailing)
-            .frame(width: tile * 0.35, height: tile * 1.8)
-            .rotationEffect(.degrees(22))
-            .offset(x: shown ? tile * 1.1 : -tile * 1.1)
-            .animation(shown ? .easeInOut(duration: 0.85 * factor).delay(0.5 * factor) : nil, value: shown)
-            .blendMode(.plusLighter)
-            .frame(width: tile, height: tile)
-            .clipShape(RoundedRectangle(cornerRadius: tile * Brand.tileRadius, style: .continuous))
-            .allowsHitTesting(false)
-    }
-}
-
-/// Saída da abertura: esmaece com um leve zoom e desfoque (só esmaece com Reduzir Movimento).
-private struct SplashExit: ViewModifier {
-    let active: Bool
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    func body(content: Content) -> some View {
-        let moves = Motion.allowsMovement(reduceMotion: reduceMotion)
-        content
-            .scaleEffect(active && moves ? 1.06 : 1)
-            .blur(radius: active && moves ? 14 : 0)
-            .opacity(active ? 0 : 1)
-    }
-}
-
-extension AnyTransition {
-    static var splashExit: AnyTransition {
-        .asymmetric(insertion: .identity, removal: .modifier(active: SplashExit(active: true), identity: SplashExit(active: false)))
     }
 }
 

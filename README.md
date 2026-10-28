@@ -53,3 +53,22 @@ Sem `--dry-run`, o emulador é aberto de verdade.
 - [`docs/origem/`](docs/origem/): especificação original usada para planejar o projeto.
 
 Ilustrações, logos e telas de terceiros citados como inspiração não são usados no projeto.
+
+## Releases
+
+O workflow de testes do GitHub Actions testa e valida o pacote em pull requests, pushes
+para branches fora de `main` e execuções manuais. O workflow de release reutiliza esses
+mesmos testes no commit enviado a `main`. Após os testes de um push em `main`, o semantic-release analisa os commits convencionais,
+cria a tag e publica uma GitHub Release quando há alterações que justificam uma nova versão.
+O ZIP do `RetroX.app` para Apple Silicon e seu SHA-256 ficam anexados à release.
+A primeira versão automática será `1.0.0` se ainda não houver uma tag de release.
+
+Para gerar o pacote localmente em um Mac, execute `scripts/package-app.sh 1.2.3`.
+O arquivo é criado em `dist/` para a arquitetura do computador, com assinatura ad hoc;
+o Gatekeeper pode bloquear sua abertura em outro Mac.
+
+O pacote de teste e seu checksum também ficam disponíveis na seção **Artifacts** da
+execução do workflow no GitHub Actions. Esse pacote usa a versão `0.0.0` e serve para
+validar o commit executado. As releases versionadas continuam disponíveis em **Releases**.
+Não é necessária uma conta Apple para gerar esses arquivos. A assinatura é ad hoc e
+não há notarização; o macOS pode exigir que o usuário autorize a abertura do app.

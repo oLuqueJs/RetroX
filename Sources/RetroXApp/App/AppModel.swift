@@ -113,14 +113,12 @@ final class AppModel {
     }
 
     /// Abertura: a Rayo e o nome entram, ficam um instante e a tela de perfis aparece por baixo.
-    /// A espera cobre o brilho do tile, que termina em ~1,35 s.
     func runSplash() async {
         guard splash == .intro else { return }
         try? await Task.sleep(for: .milliseconds(60))
         withAnimation(Motion.screen) { splash = .revealed }
-        try? await Task.sleep(for: .milliseconds(Int(1650 * Motion.settings.factor)))
-        let exit: Animation? = Motion.settings.level == .off ? nil : .smooth(duration: 0.6 * Motion.settings.factor)
-        withAnimation(exit) { splash = .done }
+        try? await Task.sleep(for: .milliseconds(Int(1300 * Motion.settings.factor)))
+        withAnimation(Motion.screen) { splash = .done }
     }
 
     // MARK: Navegação
