@@ -40,6 +40,14 @@ struct FakeFileSystem: FileSystemProbing {
         return data.prefix(maxLength)
     }
 
+    func contentsOfDirectory(at url: URL) -> [URL] {
+        let parent = Self.normalize(url.path(percentEncoded: false))
+        return entries.keys
+            .filter { ($0 as NSString).deletingLastPathComponent == parent && !($0 as NSString).lastPathComponent.hasPrefix(".") }
+            .sorted()
+            .map { URL(filePath: $0) }
+    }
+
     /// Cria um `.app` mínimo: Info.plist e executável com o cabeçalho Mach-O dado.
     mutating func addAppBundle(
         at path: String,

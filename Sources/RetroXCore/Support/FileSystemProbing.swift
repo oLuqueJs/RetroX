@@ -13,6 +13,14 @@ public protocol FileSystemProbing: Sendable {
     func isReadable(_ url: URL) -> Bool
     func isExecutable(_ url: URL) -> Bool
     func readPrefix(of url: URL, maxLength: Int) throws -> Data
+    /// Itens visíveis de uma pasta, em ordem de nome. Vazio se a pasta não existe ou não pode ser lida.
+    func contentsOfDirectory(at url: URL) -> [URL]
+}
+
+extension FileSystemProbing {
+    func readText(of url: URL, maxLength: Int = 1 << 20) -> String? {
+        (try? readPrefix(of: url, maxLength: maxLength)).map { String(decoding: $0, as: UTF8.self) }
+    }
 }
 
 public struct LocalFileSystem: FileSystemProbing {
@@ -38,5 +46,12 @@ public struct LocalFileSystem: FileSystemProbing {
         let handle = try FileHandle(forReadingFrom: url)
         defer { try? handle.close() }
         return try handle.read(upToCount: maxLength) ?? Data()
+    }
+
+    public func contentsOfDirectory(at url: URL) -> [URL] {
+        let items = (try? FileManager.default.contentsOfDirectory(
+            at: url, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]
+        )) ?? []
+        return items.sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
     }
 }
