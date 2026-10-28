@@ -12,13 +12,23 @@ Não é necessário acrescentar outro framework para testar os protocolos atuais
 | Processo real controlado | `scripts/integration-launch.sh --process-only` | argv byte a byte, término imediato, exit codes 0/17, stream de saída encerrado e executável removido; não abre janela |
 | Integração desktop | `scripts/integration-launch.sh` | Inclui LaunchServices, reutilização de instância e o processo falso; requer sessão gráfica |
 | Pacote | `scripts/package-app.sh 0.0.0` seguido de `scripts/verify-package.sh 0.0.0` | ZIP extraído, checksum, executável, arquitetura, versão, ícone, recurso da marca e assinatura |
-| Instalação real | `scripts/test-installed-emulator.sh pcsx2 /caminho/PCSX2.app` | Inspeção do bundle e arquitetura, mais preparação do plano do PCSX2 sem executá-lo |
+| Instalação real | `RX_PCSX2_APP=/caminho/PCSX2.app scripts/test.sh --filter InstalledEmulatorTests` | Inspeção do bundle e arquitetura, mais preparação do plano do PCSX2 sem executá-lo |
 | Rede real | `RX_NETWORK=1 scripts/test.sh --filter MetadataNetworkTests` | Integração opt-in com Wikipedia/Wikidata |
 
 O CI executa os unitários/mocks, o processo falso sem janela e a validação do pacote.
 Registra o commit/toolchain e guarda os logs mesmo se os testes falharem. Não depende
 de jogos, BIOS, firmware, contas externas nem instalações de emuladores.
 As suítes opt-in aparecem como ignoradas no comando padrão.
+
+## Diagnóstico de launch
+
+Para investigar um launch sem a interface, com o mesmo código do app:
+
+```sh
+swift run rx-launch-probe --app /Applications/PCSX2.app --rom "/caminho/do/jogo.iso" --dry-run
+```
+
+Sem `--dry-run`, o emulador é aberto de verdade.
 
 ## Mocks e bibliotecas
 
@@ -40,9 +50,9 @@ separada dos testes de domínio e do contrato de lançamento.
 Os comandos abaixo são somente leitura e exigem o caminho explicitamente:
 
 ```sh
-scripts/test-installed-emulator.sh pcsx2 /Applications/PCSX2.app
-scripts/test-installed-emulator.sh azahar /Applications/Azahar.app
-scripts/test-installed-emulator.sh ryujinx /Applications/Ryujinx.app
+RX_PCSX2_APP=/Applications/PCSX2.app scripts/test.sh --filter InstalledEmulatorTests
+RX_AZAHAR_APP=/Applications/Azahar.app scripts/test.sh --filter InstalledEmulatorTests
+RX_RYUJINX_APP=/Applications/Ryujinx.app scripts/test.sh --filter InstalledEmulatorTests
 ```
 
 Azahar e Ryujinx validam apenas o contrato genérico do bundle macOS: plist, executável,

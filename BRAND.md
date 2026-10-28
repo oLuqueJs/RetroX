@@ -51,4 +51,7 @@ Para pedir autorização, escreva para [yukaritake@proton.me](mailto:yukaritake@
 3. **Remova ou renomeie** o tema "Rayo Paradise" se quiser evitar qualquer associação.
 4. Mantenha os avisos de copyright do código e a licença GPL-3.0, como ela exige.
 
+O ícone, o tile e as assinaturas são gerados a partir de `docs/design/rayo/rayo.png` por
+`swift scripts/brand-kit.swift`.
+
 Sem o tile, a interface cai num "R" provisório (`Sources/RetroXApp/DesignSystem/Brand.swift`).

@@ -2,7 +2,7 @@
 
 **Versão:** 0.2 | **Status:** revisado após o plano técnico (ver §12) | **Plataforma:** macOS 14+ | **Idioma da interface inicial:** português do Brasil (arquitetura pronta para localização)
 
-> Nome anterior (provisório): ConsoleShelf. A especificação original está em `docs/origem/`.
+> Nome anterior (provisório): ConsoleShelf.
 
 ## 1. Visão e problema
 

@@ -18,3 +18,8 @@ local/
 
 # Dependências da automação de release
 node_modules/
+
+# Ferramentas de IA locais
+.claude/*
+!.claude/skills/
+.codex/

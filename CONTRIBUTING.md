@@ -98,6 +98,26 @@ Tipos usados: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`. Eles def
 Para mudança incompatível, escreva `BREAKING CHANGE: <descrição>` no corpo do commit (gera major).
 O `!` depois do tipo não é reconhecido.
 
+## Releases
+
+O workflow **Testes** roda em pull requests, em pushes para branches fora de `main` e sob demanda.
+O workflow de release reutiliza esses testes no commit enviado a `main`; depois deles, o
+semantic-release lê os commits, cria a tag e publica uma GitHub Release com o ZIP do `RetroX.app`
+(Apple Silicon) e o SHA-256. As regras de versão estão em `.releaserc.json`:
+
+| Commit | Versão | Exemplo (a partir de 0.0.0) |
+| --- | --- | --- |
+| `BREAKING CHANGE` no corpo (qualquer tipo) | major | 1.0.0 |
+| `feat` | minor | 0.1.0 |
+| `fix`, `chore` | patch | 0.0.1 |
+| `docs`, `ci`, `refactor`, `test`, `perf`, `style`, `build` | sem release | — |
+
+Sem nenhuma tag no repositório, o semantic-release começa em `1.0.0`. Para começar em `0.x`, crie antes a
+tag `v0.0.0` no commit de partida.
+
+Para gerar o pacote localmente: `scripts/package-app.sh 1.2.3` (o ZIP vai para `dist/`, com assinatura
+ad hoc, sem notarização). Cada execução do workflow também deixa um pacote de teste (`0.0.0`) em **Artifacts**.
+
 ## Checklist do pull request
 
 - [ ] `swift build` e `swift test` passam localmente
