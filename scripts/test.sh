@@ -15,4 +15,5 @@ if [[ "$developer_dir" == *CommandLineTools* && -d "$plugin_dir" ]]; then
   extra=(-Xswiftc -plugin-path -Xswiftc "$plugin_dir")
 fi
 
-exec swift test "${extra[@]}" "$@"
+# A forma `${extra[@]+...}` evita o erro de `set -u` com array vazio no bash 3.2 (o do macOS e dos runners).
+exec swift test ${extra[@]+"${extra[@]}"} "$@"
