@@ -104,7 +104,8 @@ open .build/RetroX.app
 ### Testes
 
 ```sh
-scripts/test.sh                   # testes unitários (Swift Testing)
+swift test                        # testes unitários (Swift Testing)
+scripts/test.sh                   # alternativa usada pelo CI; aceita os argumentos do swift test
 scripts/integration-launch.sh --process-only # processo falso sem janela (também no CI)
 scripts/integration-launch.sh     # abre um emulador falso de verdade e confere o argv
 RX_NETWORK=1 scripts/test.sh --filter MetadataNetworkTests   # busca real na Wikipedia (opt-in)
