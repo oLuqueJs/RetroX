@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>RetroX</title>
+  <!-- Marca do RetroX (conceito C, escolhido em 2026-10-28). Master ainda em traço: converter para contorno preenchido no kit final. -->
+  <g transform="translate(128 128) scale(1.22) translate(-126 -128)" fill="none" stroke="#000" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M82 202V54h52a40 40 0 0 1 0 80H82"/>
+    <path d="M138 134l38 66"/>
+  </g>
+</svg>

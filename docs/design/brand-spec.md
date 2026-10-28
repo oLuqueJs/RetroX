@@ -4,6 +4,11 @@ Direção escolhida em 2026-10-28 entre três propostas (Portátil quente, Edito
 
 Os valores abaixo são a fonte da verdade em `Sources/RetroXCore/Design/Palette.swift`, e o contraste é verificado por teste (`PaletteTests`).
 
+## Marca
+- **Símbolo:** R geométrico de traço único, pontas e junções arredondadas, traço de 28/256 do quadro (`docs/design/logo/retrox-mark.svg`). Na cor de tema sobre fundo neutro, ou no texto sobre o acento.
+- **Pendente:** converter o traço em contorno preenchido, fazer o corte para 16 px, ícone do app e versões com o nome.
+- **Personagem (futuro):** uma personagem de anime de traço simples vai acompanhar a marca em telas como a abertura, os estados vazios e o onboarding. O símbolo R continua sendo a identificação principal. A personagem deve ser original e manter os cantos arredondados e a paleta do tema.
+
 ## Temas
 O RetroX tem 11 temas, escolhidos por perfil, cada um com variante clara e escura: **RetroX** (a paleta abaixo, com 4 acentos), Gruvbox, Catppuccin (Latte/Mocha), Tokyo Night (Day/Night), Nord, Solarized, Dracula (Alucard/Dracula), Rosé Pine (Dawn/Main), Everforest, Kanagawa (Lotus/Wave) e One. Os esquemas conhecidos usam as cores oficiais de cada projeto, com ajustes mínimos onde a cor original não atingia AA. Quase sempre o ajuste foi no texto secundário; em Catppuccin Latte, Tokyo Night Day, Solarized e Everforest claros, o texto principal ficou um pouco mais escuro para manter a hierarquia. Os valores estão em `Sources/RetroXCore/Design/Themes.swift`, e `ThemeTests` confere contraste e hierarquia de todos.
 

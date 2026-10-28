@@ -25,6 +25,7 @@ Decisões do usuário e suposições de trabalho que não cabem num ADR. Decisõ
 | D12 | RetroAchievements fica fora do RetroX (pedido do usuário em 2026-10-28): nada é lido nem mostrado. O controle do PCSX2 continua só em leitura; gravar perfil de entrada depende de consentimento e teste com controle (spike 0002). |
 | D13 | Ajustes dentro da janela, navegáveis por controle, com presets Xbox, PlayStation (DualSense) e Switch. Fonte, tamanho do texto, visualização da tela inicial (Prateleira, Carrossel, Grade), fundo ambiente e animações são preferências do perfil. |
 | D14 | Abertura animada ao iniciar e transições suaves entre telas, inspiradas na fluidez do iiSU, com identidade própria. |
+| D15 | Marca do RetroX: R geométrico de traço único com pontas arredondadas (conceito C), em `docs/design/logo/retrox-mark.svg`. Ainda falta o kit (contorno preenchido, cores, ícone do app, versões com nome). No futuro, uma personagem de anime simples também vai representar a marca, ao lado do R e sem substituí-lo. |
 
 ## Suposições de trabalho
 
