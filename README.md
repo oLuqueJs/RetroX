@@ -7,7 +7,7 @@
 
 <div align="center">
   <a href="https://www.swift.org/"><img alt="Swift" src="https://img.shields.io/badge/Swift-C7472A?style=for-the-badge&amp;logo=swift&amp;logoColor=white" /></a>
-  <a href="https://www.apple.com/macos/"><img alt="macOS" src="https://img.shields.io/badge/macOS-C7472A?style=for-the-badge&amp;logo=macos&amp;logoColor=white" /></a>
+  <a href="https://www.apple.com/macos/"><img alt="macOS" src="https://img.shields.io/badge/macOS-C7472A?style=for-the-badge&amp;logo=apple&amp;logoColor=white" /></a>
 </div>
 
 <div align="center">
