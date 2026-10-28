@@ -10,6 +10,25 @@ Launcher nativo para macOS que reúne numa biblioteca visual os jogos de vários
 - Para compilar: Swift 6 (Command Line Tools ou Xcode). A persistência (Fase 2 em diante) exige o Xcode.
 - Emuladores instalados pelo usuário. Hoje: PCSX2 (PS2). Dolphin (GameCube/Wii) está planejado.
 
+## Compilar, testar e rodar
+
+```sh
+scripts/check-toolchain.sh        # o que o toolchain atual consegue (Xcode, SwiftData, Rosetta)
+swift build                       # app, ferramentas e núcleo
+scripts/test.sh                   # testes unitários (Swift Testing)
+scripts/integration-launch.sh     # abre um emulador falso de verdade e confere o argv
+scripts/bundle-app.sh debug       # monta .build/RetroX.app (assinatura ad hoc)
+open .build/RetroX.app
+```
+
+Diagnóstico de launch sem a interface (o mesmo código do app):
+
+```sh
+swift run rx-launch-probe --app /Applications/PCSX2.app --rom "/caminho/do/jogo.iso" --dry-run
+```
+
+Sem `--dry-run`, o emulador é aberto de verdade.
+
 ## Documentação
 
 - [`docs/PRD.md`](docs/PRD.md): produto, escopo, requisitos e critérios de aceite.

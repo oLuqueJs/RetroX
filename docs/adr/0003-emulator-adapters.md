@@ -20,5 +20,5 @@ Um switch gigante por console (evolui mal); comando livre sem validação (arris
 
 ## Emenda (2026-10-27)
 - O adapter não executa nada: ele produz um `LaunchPlan` puro (app, executável, argumentos, estratégia). O plano é testável sem processo real e é o que o modo simulado exibe.
-- A escolha entre `NSWorkspace` e `Process` por adapter será registrada no ADR-0011, com a evidência do spike `docs/spikes/0001-launch-pcsx2-macos.md`.
+- A escolha entre `NSWorkspace` e `Process` está no ADR-0011 (NSWorkspace por padrão), com a evidência do spike `docs/spikes/0001-launch-pcsx2-macos.md`.
 - Política para emulador já aberto: o RetroX não encerra o emulador e não cria nova instância por padrão; oferece trazê-lo para frente.
