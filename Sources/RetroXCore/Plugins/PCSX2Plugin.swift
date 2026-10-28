@@ -71,6 +71,12 @@ public struct PCSX2Plugin: EmulatorPlugin {
             let coversURL = resolve(settings.value("Covers", in: "Folders") ?? "covers", relativeTo: dataDirectory)
             if fileSystem.kind(of: coversURL) == .directory { discovery.coverDirectories.append(coversURL) }
             discovery.bios = biosStatus(settings: settings, dataDirectory: dataDirectory)
+            discovery.achievements = Self.achievements(settings)
+            discovery.controller = Self.controller(settings)
+        }
+        if let app = discovery.app {
+            let index = app.bundleURL.appending(path: "Contents/Resources/GameIndex.yaml", directoryHint: .notDirectory)
+            if fileSystem.kind(of: index) == .regularFile { discovery.gameIndexFile = index }
         }
 
         discovery.romDirectories = Self.merged(romDirectories)
@@ -98,6 +104,28 @@ public struct PCSX2Plugin: EmulatorPlugin {
         let folder = app.bundleURL.deletingLastPathComponent()
         let markers = ["portable.ini", "portable.txt"].map { folder.appending(path: $0, directoryHint: .notDirectory) }
         return markers.contains(where: { fileSystem.kind(of: $0) == .regularFile }) ? folder : nil
+    }
+
+    /// `[Achievements]` do PCSX2.ini. O token de login (`Token`) não é consultado.
+    static func achievements(_ settings: INIFile) -> AchievementsStatus {
+        AchievementsStatus(
+            isEnabled: settings.value("Enabled", in: "Achievements") == "true",
+            isHardcore: settings.value("ChallengeMode", in: "Achievements") == "true",
+            username: settings.value("Username", in: "Achievements")
+        )
+    }
+
+    static let padButtons = ["Cross", "Circle", "Square", "Triangle", "Up", "Down", "Left", "Right",
+                             "L1", "R1", "L2", "R2", "L3", "R3", "Select", "Start"]
+
+    /// `[Pad1]` do PCSX2.ini: tipo de controle e a que entrada cada botão do PS2 está ligado.
+    static func controller(_ settings: INIFile) -> ControllerSummary? {
+        guard let type = settings.value("Type", in: "Pad1"), type != "None" else { return nil }
+        let bindings = padButtons.compactMap { button in
+            settings.value(button, in: "Pad1").map { ControllerSummary.Binding(button: button, input: $0) }
+        }
+        let device = bindings.first?.input.split(separator: "/").first.map(String.init)
+        return ControllerSummary(type: type, device: device, bindings: bindings)
     }
 
     private func biosStatus(settings: INIFile, dataDirectory: URL) -> PluginDiscovery.BIOSStatus {
