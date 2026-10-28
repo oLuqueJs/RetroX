@@ -1,10 +1,13 @@
 import AppKit
+import RetroXCore
 import SwiftUI
 
 @main
 struct RetroXApp: App {
-    // Constante em vez de `@State`: ver o comentário em `LaunchViewModel.importer`.
-    private let model = LaunchViewModel()
+    // Constante em vez de `@State`: no SDK 27 `@State` é uma macro que as Command Line Tools não trazem (ADR-0010).
+    private let model = AppModel()
+    @AppStorage("appearance") private var appearance = Appearance.system
+    @AppStorage("accent") private var accent = Palette.Accent.coral
 
     init() {
         // Rodando fora de um .app (swift run), o processo nasceria sem ícone no Dock nem foco.
@@ -13,8 +16,70 @@ struct RetroXApp: App {
 
     var body: some Scene {
         Window("RetroX", id: "main") {
-            LaunchView(model: model)
+            RootView()
+                .environment(model)
+                .environment(model.covers)
+                .environment(\.accent, accent)
+                .tint(Color(accent.fill))
+                .preferredColorScheme(appearance.colorScheme)
         }
-        .windowResizability(.contentMinSize)
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1240, height: 800)
+
+        Settings {
+            SettingsView()
+                .environment(\.accent, accent)
+        }
+    }
+}
+
+struct RootView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.accent) private var accent
+
+    var body: some View {
+        @Bindable var model = model
+        ZStack {
+            Theme.background
+                .ignoresSafeArea()
+            switch model.screen {
+            case .home:
+                HomeView()
+                    .transition(.opacity)
+            case .emulators:
+                EmulatorsView()
+                    .transition(.opacity)
+            }
+            if model.session.isPresenting {
+                SessionOverlay()
+                    .transition(.opacity)
+            }
+        }
+        .animation(Motion.fade, value: model.screen)
+        .animation(Motion.fade, value: model.session.isPresenting)
+        .sheet(item: $model.detailsGame) { game in
+            GameDetailsView(game: game)
+                .environment(model)
+                .environment(model.covers)
+                .environment(\.accent, accent)
+        }
+        .frame(minWidth: 1024, minHeight: 680)
+        .task { await model.start() }
+        .task { await DebugSnapshot.captureIfRequested() }
+        .onChange(of: model.session.phase) { _, phase in
+            announce(phase)
+        }
+    }
+
+    private func announce(_ phase: SessionModel.Phase) {
+        let message: String? = switch phase {
+        case .running(let game, let emulator): String(localized: "\(game.title) aberto no \(emulator).")
+        case .ended: String(localized: "Partida encerrada.")
+        case .failed(_, let error): error.message
+        default: nil
+        }
+        if let message {
+            AccessibilityNotification.Announcement(message).post()
+        }
     }
 }
