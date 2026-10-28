@@ -32,25 +32,60 @@ application UI from reusable core functionality.
 
 ## Git Workflow
 
-The project uses GitHub Flow. `main` is always releasable and protected.
+Two long-lived, protected branches:
 
-1. Never commit or push directly to `main`.
-2. Branch from an up-to-date `main`. Name branches `<type>/<short-description>`
+- `beta`: where changes land first. Every merge publishes a pre-release
+  (`1.2.0-beta.1`, `1.2.0-beta.2`, ...).
+- `main`: stable. Only receives promotions from `beta` and urgent hotfixes.
+  Every merge may publish a stable release.
+
+Rules:
+
+1. Never commit or push directly to `main` or `beta`.
+2. Branch from an up-to-date `beta`. Name branches `<type>/<short-description>`
    with the same types as commits: `feat/`, `fix/`, `chore/`, `docs/`,
    `refactor/`, `test/`, `ci/`.
 3. Keep branches short-lived and focused on one change.
-4. Open a pull request to `main`. Required: CI (workflow "Testes") green.
-5. PRs are merged with **squash merge** only. The PR title becomes the commit
-   on `main`, so it must be a valid Conventional Commit, in Portuguese:
-   `feat(biblioteca): detecta capas do Azahar`.
+4. Open a pull request to `beta`. Required: CI (workflow "Testes") green.
+   Contributions from forks follow the same rule.
+5. All PRs, including `beta` -> `main`, are merged with **squash merge**. The
+   PR title becomes the commit, so it must be a valid Conventional Commit, in
+   Portuguese: `feat(biblioteca): detecta capas do Azahar`.
 6. Delete the branch after merge.
-7. Never merge without human approval, never force-push `main`, never skip
-   hooks or CI.
+7. Never merge without human approval, never force-push `main` or `beta`,
+   never skip hooks or CI.
+
+### Promoting to stable
+
+A stable release happens when a PR `beta` -> `main` is squash merged, after the
+pre-release was tested. Never open it without being asked.
+
+Because the squash commit is the only commit semantic-release reads on `main`:
+
+- The title is a Conventional Commit whose **type matches the highest-impact
+  change** being promoted: `feat` if any feature, otherwise `fix` (or `chore`).
+  Example: `feat: novo tema Rayo Paradise e capas do Azahar`.
+- If any promoted change has a `BREAKING CHANGE`, repeat it as a
+  `BREAKING CHANGE: <description>` footer in the PR description, which becomes
+  the commit body.
+- The squash commit message must use "pull request title and description".
+- Right after the merge, merge `main` back into `beta`. Without this, the
+  promoted commits are not ancestors of `main` and the next promotion PR
+  conflicts or lists them again.
+
+### Exceptions to go straight to `main`
+
+- Urgent hotfixes (`fix/`), branched from `main`.
+- Changes that do not publish a version and do not touch app behavior
+  (`docs`, `ci`).
+
+After any change merged straight into `main`, merge `main` back into `beta`
+to keep the branches in sync.
 
 ### Commits and versions
 
-semantic-release publishes a release on every merge to `main`, using the
-rules in `.releaserc.json`:
+semantic-release publishes a release on every merge to `beta` (pre-release)
+and `main` (stable), using the rules in `.releaserc.json`:
 
 | Commit type | Release |
 | --- | --- |

@@ -1,3 +1,5 @@
+> O alvo deste PR deve ser a branch `beta`.
+
 ## O que muda e por quê
 
 <!-- Descreva a mudança e o motivo. Ligue a issue: Closes #123 -->
