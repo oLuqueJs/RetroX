@@ -40,6 +40,18 @@ escrever o código. Assim você evita retrabalho. Decisões já tomadas estão e
 Não abra issue pública. Escreva para [yukaritake@proton.me](mailto:yukaritake@proton.me) com os
 detalhes, e a resposta vem o quanto antes.
 
+### Fluxo de branches
+
+O projeto usa **GitHub Flow**: a `main` está sempre pronta para release e é protegida. Todo trabalho
+entra por pull request, vindo de uma branch curta (ou de um fork) criada a partir da `main`.
+
+- Nome da branch: `<tipo>/<descrição-curta>`, com os mesmos tipos dos commits.
+- O PR exige o CI verde e é integrado com **squash merge**. O título do PR vira o commit na `main`,
+  então ele precisa seguir o padrão de commits abaixo.
+- Cada merge pode publicar uma release (veja [Releases](#releases)); por isso, agrupe mudanças
+  relacionadas num PR só.
+- Depois do merge, a branch é apagada.
+
 ### Enviando código por fork e pull request
 
 1. Faça um **fork** do repositório e clone o seu fork.
