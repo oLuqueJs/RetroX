@@ -4,6 +4,9 @@ import RetroXCore
 // Ferramenta de diagnóstico do spike de launch: usa o mesmo GameLauncher do app,
 // mostra o plano validado e, sem --dry-run, abre o emulador.
 
+// Saída por linha mesmo redirecionada para arquivo: scripts leem o "pid:" enquanto o emulador roda.
+setvbuf(stdout, nil, _IOLBF, 0)
+
 let usage = """
     uso: rx-launch-probe --app <Emulador.app> --rom <arquivo> [opções]
 
