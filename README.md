@@ -103,7 +103,7 @@ O RetroX é escrito em Swift 6 (concorrência estrita) com SwiftUI e AppKit, e i
 * Biblioteca não destrutiva: lê as pastas de jogos e nunca escreve nelas
 * Metadados offline primeiro, com busca opcional na Wikipedia
 * Navegação completa por teclado e controle (GameController), com glifos por tipo de controle
-* 11 temas com variante clara e escura, contraste conferido por testes
+* 12 temas com variante clara e escura, entre eles o Rayo Paradise, com contraste conferido por testes
 
 ## Estrutura do projeto
 

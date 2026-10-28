@@ -39,16 +39,17 @@ public enum AppearancePreference: String, Codable, CaseIterable, Sendable, Ident
     }
 }
 
-/// Temas de cor. Os esquemas conhecidos usam as cores oficiais de cada projeto, com ajustes mínimos
+/// Temas de cor. RetroX e Rayo Paradise são próprios; os esquemas conhecidos usam as cores oficiais de cada projeto, com ajustes mínimos
 /// onde a cor original não atingia o contraste AA (texto ≥ 4,5:1, anel de foco ≥ 3:1). `PaletteTests` confere.
 public enum ThemeID: String, CaseIterable, Codable, Sendable, Identifiable {
-    case retrox, gruvbox, catppuccin, tokyoNight, nord, solarized, dracula, rosePine, everforest, kanagawa, one
+    case retrox, rayoParadise, gruvbox, catppuccin, tokyoNight, nord, solarized, dracula, rosePine, everforest, kanagawa, one
 
     public var id: Self { self }
 
     public var title: String {
         switch self {
         case .retrox: "RetroX"
+        case .rayoParadise: "Rayo Paradise"
         case .gruvbox: "Gruvbox"
         case .catppuccin: "Catppuccin"
         case .tokyoNight: "Tokyo Night"
@@ -83,6 +84,12 @@ public enum ThemeID: String, CaseIterable, Codable, Sendable, Identifiable {
                 pick(Palette.background), pick(Palette.surface), pick(Palette.raised), pick(Palette.textPrimary),
                 pick(Palette.textSecondary), pick(Palette.divider), pick(retroXAccent.fill), pick(retroXAccent.onFill),
             ])
+        case .rayoParadise:
+            // Cores da Rayo (docs/design/logo/README.md): noite em índigo com o rosa do cabelo; dia no céu do
+            // fundo do tile com a framboesa do X.
+            return dark
+                ? ThemePalette(["191A2E", "22233B", "2C2D4A", "F6ECF0", "B9B6DA", "3A3B5C", "FEB5B8", "191A2E"])
+                : ThemePalette(["EDF3FF", "F8FAFF", "DDE6FA", "1E1E3A", "4E5175", "CDD8F0", "D63A62", "FFFFFF"])
         case .gruvbox:
             return dark
                 ? ThemePalette(["282828", "32302F", "3C3836", "EBDBB2", "BDAE93", "504945", "FE8019", "282828"])
