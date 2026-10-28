@@ -46,8 +46,8 @@ public struct FoundationProcessLauncher: ProcessLaunching {
     /// Um processo iniciado por exec não é ativado pelo sistema; o app só aparece para o AppKit depois de registrar.
     private static func activateWhenRegistered(pid: pid_t) async {
         for _ in 0..<20 {
-            if let app = NSRunningApplication(processIdentifier: pid), app.activationPolicy == .regular {
-                app.activate()
+            if let app = NSRunningApplication(processIdentifier: pid) {
+                if app.activationPolicy == .regular { app.activate() }
                 return
             }
             try? await Task.sleep(for: .milliseconds(150))
