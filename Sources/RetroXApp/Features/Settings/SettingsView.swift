@@ -159,12 +159,12 @@ struct SettingsRowView: View {
                 }
             }
         case .toggle(let isOn, let set):
-            Toggle(row.title, isOn: Binding(get: { isOn }, set: set))
+            Toggle(row.title, isOn: Binding(get: { isOn }, set: { value in set(value) }))
                 .toggleStyle(.switch)
                 .labelsHidden()
                 .tint(Theme.accent)
         case .action(let label, let run):
-            Button(label, action: run)
+            Button(label) { run() }
                 .buttonStyle(SecondaryButtonStyle(isCompact: true))
         case .info(let text):
             Text(text)

@@ -5,7 +5,7 @@ import SwiftUI
 /// Marca do RetroX: a Rayo e o nome com o "X" na cor de tema. `mark` é o tile do ícone, sem a margem da grade
 /// do macOS. As regras de composição são as do kit (docs/design/logo/README.md, scripts/brand-kit.swift).
 enum Brand {
-    static let mark = load("RayoMark")
+    @MainActor static let mark = load("RayoMark")
 
     /// Raio do tile em fração do lado: o mesmo da grade de ícone do macOS (185/824).
     static let tileRadius: CGFloat = 185.0 / 824.0
