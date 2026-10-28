@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 import Observation
 import RetroXCore
 
@@ -18,6 +18,8 @@ final class PluginsModel {
     }
 
     private(set) var entries: [Entry]
+    /// Emuladores conhecidos ainda sem plugin, com o app encontrado neste Mac (se houver).
+    private(set) var otherEmulators: [(PluginCatalog.KnownEmulator, URL?)] = []
     @ObservationIgnored private let store: JSONFileStore<[String: PluginConfig]>
 
     init(
@@ -77,6 +79,10 @@ final class PluginsModel {
     }
 
     func discoverAll() async {
+        otherEmulators = PluginCatalog.known.compactMap { emulator in
+            let app = emulator.bundleIdentifiers.lazy.compactMap { NSWorkspace.shared.urlsForApplications(withBundleIdentifier: $0).first }.first
+            return emulator.isPlanned || app != nil ? (emulator, app) : nil
+        }
         for entry in entries where entry.config.isEnabled {
             await discover(entry.id)
         }

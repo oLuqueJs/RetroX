@@ -7,18 +7,19 @@ struct ShelfView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    static let tileWidth: CGFloat = 128
+    static let baseTileWidth: CGFloat = 128
     static let reflectionHeight: CGFloat = 32
 
     var body: some View {
         let library = model.library
+        let tileWidth = Self.baseTileWidth * model.preferences.tileSize.scale
         VStack(alignment: .leading, spacing: Spacing.s) {
             ShelfTabs()
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(alignment: .bottom, spacing: Spacing.l) {
                         ForEach(library.visibleGames) { game in
-                            ShelfTile(game: game, isFocused: game.id == library.focusedGame?.id)
+                            ShelfTile(game: game, width: tileWidth, isFocused: game.id == library.focusedGame?.id)
                                 .id(game.id)
                         }
                     }
@@ -26,7 +27,7 @@ struct ShelfView: View {
                     .padding(.top, Spacing.xl)
                 }
                 .scrollClipDisabled()
-                .frame(height: Self.tileWidth * CoverArtView.aspectRatio + Self.reflectionHeight + Spacing.xl + Spacing.s)
+                .frame(height: tileWidth * CoverArtView.aspectRatio + Self.reflectionHeight + Spacing.xl + Spacing.s)
                 .background(alignment: .bottom) { ShelfFloor() }
                 .onChange(of: library.focusedGameID) { _, id in
                     guard let id else { return }
@@ -40,7 +41,7 @@ struct ShelfView: View {
     }
 }
 
-private struct ShelfTabs: View {
+struct ShelfTabs: View {
     @Environment(AppModel.self) private var model
     @Namespace private var underline
 
@@ -86,15 +87,16 @@ private struct ShelfTabs: View {
 
 private struct ShelfTile: View {
     let game: Game
+    let width: CGFloat
     let isFocused: Bool
     @Environment(AppModel.self) private var model
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         let isHovered = model.browser.hoveredGameID == game.id && !isFocused
-        let lifts = !reduceMotion && (isFocused || isHovered)
+        let lifts = Motion.allowsMovement(reduceMotion: reduceMotion) && (isFocused || isHovered)
         VStack(spacing: 0) {
-            CoverArtView(game: game, width: ShelfView.tileWidth)
+            CoverArtView(game: game, width: width)
                 .overlay {
                     RoundedRectangle.rx(Radius.m + 5)
                         .strokeBorder(Theme.accent, lineWidth: 3)
@@ -108,7 +110,7 @@ private struct ShelfTile: View {
                 )
                 .scaleEffect(lifts ? (isFocused ? 1.1 : 1.04) : 1, anchor: .bottom)
                 .offset(y: lifts ? (isFocused ? -6 : -2) : 0)
-            Reflection(game: game)
+            Reflection(game: game, width: width)
                 .opacity(isFocused ? 1 : 0)
         }
         .animation(Motion.animation(reduceMotion: reduceMotion), value: isFocused)
@@ -135,11 +137,12 @@ private struct ShelfTile: View {
 }
 
 /// O pé da capa espelhado e esmaecido, como num piso brilhante.
-private struct Reflection: View {
+struct Reflection: View {
     let game: Game
+    var width: CGFloat = ShelfView.baseTileWidth
 
     var body: some View {
-        CoverArtView(game: game, width: ShelfView.tileWidth)
+        CoverArtView(game: game, width: width)
             .scaleEffect(x: 1, y: -1)
             .frame(height: ShelfView.reflectionHeight, alignment: .top)
             .clipped()

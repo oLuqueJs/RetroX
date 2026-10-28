@@ -71,25 +71,100 @@ enum Radius {
     static let xl: CGFloat = 24
 }
 
-/// No máximo quatro tamanhos por tela: título, seção, corpo e legenda.
-enum Typography {
-    static let display = Font.system(size: 34, weight: .bold, design: .rounded)
-    static let heading = Font.system(size: 20, weight: .semibold, design: .rounded)
-    static let body = Font.system(size: 15)
-    static let bodyEmphasis = Font.system(size: 15, weight: .semibold)
-    static let caption = Font.system(size: 12, weight: .medium)
+/// Fonte e tamanho escolhidos no perfil.
+struct TextSettings: Equatable, Hashable {
+    var fontStyle: ProfilePreferences.FontStyle = .rounded
+    var scale: Double = 1
 }
 
-enum Motion {
-    /// Foco e seleção: rápido e sem quicar demais.
-    static let focus = Animation.snappy(duration: 0.28, extraBounce: 0.04)
-    /// Passar o mouse: um pouco mais suave que o foco.
-    static let hover = Animation.smooth(duration: 0.22)
-    static let fade = Animation.easeOut(duration: 0.18)
+/// No máximo quatro tamanhos por tela: título, seção, corpo e legenda. A fonte e o tamanho vêm do perfil;
+/// trocar reconstrói a árvore de views (ver `AppModel.styleIdentity`).
+@MainActor
+enum Typography {
+    static var settings = TextSettings()
 
-    /// Com Reduce Motion, só esmaece; nada se desloca ou cresce.
-    static func animation(reduceMotion: Bool) -> Animation {
+    static var display: Font { title(34, .bold) }
+    static var heading: Font { title(20, .semibold) }
+    static var body: Font { text(15, .regular) }
+    static var bodyEmphasis: Font { text(15, .semibold) }
+    static var caption: Font { text(12, .medium) }
+
+    /// Títulos usam o estilo escolhido.
+    static func title(_ size: CGFloat, _ weight: Font.Weight) -> Font {
+        .system(size: size * settings.scale, weight: weight, design: design)
+    }
+
+    /// No estilo arredondado, o corpo continua na fonte padrão, que lê melhor em tamanhos pequenos.
+    static func text(_ size: CGFloat, _ weight: Font.Weight) -> Font {
+        .system(size: size * settings.scale, weight: weight, design: settings.fontStyle == .rounded ? .default : design)
+    }
+
+    private static var design: Font.Design {
+        switch settings.fontStyle {
+        case .rounded: .rounded
+        case .standard: .default
+        case .serif: .serif
+        case .mono: .monospaced
+        }
+    }
+}
+
+/// Nível e velocidade das animações escolhidos no perfil, somados ao Reduzir Movimento do macOS.
+struct MotionSettings: Equatable, Hashable {
+    var level: ProfilePreferences.AnimationLevel = .full
+    var factor: Double = 1
+}
+
+@MainActor
+enum Motion {
+    static var settings = MotionSettings()
+
+    private static var factor: Double { settings.factor }
+
+    /// Foco e seleção: rápido, com um quique quase imperceptível.
+    static var focus: Animation? {
+        switch settings.level {
+        case .full: .snappy(duration: 0.32 * factor, extraBounce: 0.05)
+        case .reduced: .easeOut(duration: 0.15 * factor)
+        case .off: nil
+        }
+    }
+
+    /// Passar o mouse e apertar botões.
+    static var hover: Animation? {
+        switch settings.level {
+        case .full: .smooth(duration: 0.24 * factor)
+        case .reduced: .easeOut(duration: 0.12 * factor)
+        case .off: nil
+        }
+    }
+
+    static var fade: Animation? {
+        settings.level == .off ? nil : .easeOut(duration: 0.2 * factor)
+    }
+
+    /// Troca de tela e cartões que surgem: mola longa e macia, sem quique.
+    static var screen: Animation? {
+        switch settings.level {
+        case .full: .smooth(duration: 0.45 * factor)
+        case .reduced: .easeOut(duration: 0.2 * factor)
+        case .off: nil
+        }
+    }
+
+    /// Fundo ambiente: troca lenta.
+    static var ambient: Animation? {
+        settings.level == .off ? nil : .easeInOut(duration: 0.7 * factor)
+    }
+
+    /// Com Reduzir Movimento do macOS, só esmaece.
+    static func animation(reduceMotion: Bool) -> Animation? {
         reduceMotion ? fade : focus
+    }
+
+    /// Escala, deslocamento e inclinação só com animações completas e sem Reduzir Movimento.
+    static func allowsMovement(reduceMotion: Bool) -> Bool {
+        !reduceMotion && settings.level == .full
     }
 }
 

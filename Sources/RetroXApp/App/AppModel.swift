@@ -1,16 +1,54 @@
 import AppKit
 import Observation
 import RetroXCore
+import SwiftUI
 
-/// Raiz do estado do app: navegação, perfis, plugins, biblioteca, partida e entrada.
+/// Raiz do estado do app: navegação, perfis, plugins, biblioteca, partida, ajustes e entrada.
 @MainActor
 @Observable
 final class AppModel {
     enum Screen: Hashable {
-        case profiles, home, library, emulators
+        case profiles, home, library, emulators, settings
+
+        /// Abas da barra superior, na ordem em que os gatilhos do controle passam por elas.
+        static let tabs: [Screen] = [.home, .library, .emulators, .settings]
+
+        var title: String {
+            switch self {
+            case .profiles: String(localized: "Perfis")
+            case .home: String(localized: "Início")
+            case .library: String(localized: "Biblioteca")
+            case .emulators: String(localized: "Emuladores")
+            case .settings: String(localized: "Ajustes")
+            }
+        }
+
+        var symbol: String {
+            switch self {
+            case .profiles: "person.2"
+            case .home: "house"
+            case .library: "square.grid.2x2"
+            case .emulators: "puzzlepiece.extension"
+            case .settings: "slider.horizontal.3"
+            }
+        }
     }
 
-    var screen: Screen = .profiles
+    enum SplashPhase {
+        case intro, revealed, done
+    }
+
+    /// Tudo o que, ao mudar, pede para redesenhar a árvore inteira com os tokens novos.
+    struct StyleIdentity: Hashable {
+        var theme = ThemeSelection()
+        var text = TextSettings()
+        var motion = MotionSettings()
+    }
+
+    private(set) var screen: Screen = .profiles
+    /// +1 indo para uma aba à direita, -1 para a esquerda: define o lado do deslize.
+    private(set) var navigationDirection = 1
+    private(set) var splash: SplashPhase = .done
     var detailsGame: Game?
     var editingProfile: ProfileDraft?
     /// Na tela de perfis: índice do perfil em foco (o último é "Adicionar perfil").
@@ -18,8 +56,18 @@ final class AppModel {
     /// Mensagem de erro curta para ações pontuais (importar imagem, por exemplo).
     var notice: String?
 
-    /// Tema e aparência do perfil atual. O tema serve de identidade da árvore de views.
-    private(set) var themeSelection = ThemeSelection()
+    // Ajustes e Emuladores navegáveis por controle e teclado.
+    var settingsSection: SettingsSection = .appearance
+    /// `nil`: o foco está na lista de seções; senão, na linha de opções.
+    var settingsRow: Int?
+    var emulatorsFocus = 0
+    /// O anel de foco de listas aparece depois do primeiro comando de teclado ou controle.
+    private(set) var showsListFocus = false
+
+    private(set) var styleIdentity = StyleIdentity()
+    /// Rodando só para capturar a janela (`-RetroXSnapshot`): ignora entradas e nunca abre jogo, para uma
+    /// tecla digitada em outro app não disparar nada.
+    let isReviewMode = UserDefaults.standard.string(forKey: "RetroXSnapshot") != nil
     private(set) var appearance: AppearancePreference = .system
 
     let profiles = ProfilesModel()
@@ -34,14 +82,20 @@ final class AppModel {
     init() {
         browser = LibraryBrowser(library: library)
         profilePickerIndex = profiles.profiles.firstIndex { $0.id == profiles.lastUsed?.id } ?? 0
-        applyTheme(of: profiles.lastUsed)
-        // Para revisão visual sem clicar: `RetroX -RetroXInitialScreen home|library|emulators`.
+        applyStyle(of: profiles.lastUsed)
+        let isSnapshot = UserDefaults.standard.string(forKey: "RetroXSnapshot") != nil
+        let forcesSplash = UserDefaults.standard.bool(forKey: "RetroXSplash")
+        if forcesSplash || (!isSnapshot && preferences.startupAnimation && Motion.settings.level != .off) {
+            splash = .intro
+        }
+        // Para revisão visual sem clicar: `RetroX -RetroXInitialScreen home|library|emulators|settings`.
         if let initial = UserDefaults.standard.string(forKey: "RetroXInitialScreen"), initial != "profiles",
            let profile = profiles.lastUsed {
             enter(profile)
             screen = switch initial {
             case "library": .library
             case "emulators": .emulators
+            case "settings": .settings
             default: .home
             }
         }
@@ -58,28 +112,59 @@ final class AppModel {
         await library.reload(from: plugins.readyPlugins)
     }
 
+    /// Abertura: o símbolo e o nome entram, ficam um instante e a tela de perfis aparece por baixo.
+    func runSplash() async {
+        guard splash == .intro else { return }
+        try? await Task.sleep(for: .milliseconds(60))
+        withAnimation(Motion.screen) { splash = .revealed }
+        try? await Task.sleep(for: .milliseconds(Int(1500 * Motion.settings.factor)))
+        withAnimation(Motion.screen) { splash = .done }
+    }
+
+    // MARK: Navegação
+
+    func navigate(to target: Screen) {
+        guard target != screen else { return }
+        let from = Screen.tabs.firstIndex(of: screen) ?? -1
+        let to = Screen.tabs.firstIndex(of: target) ?? -1
+        navigationDirection = to >= from ? 1 : -1
+        showsListFocus = false
+        if target == .settings { settingsRow = nil }
+        withAnimation(Motion.screen) { screen = target }
+    }
+
+    func cycleTab(by offset: Int) {
+        guard let index = Screen.tabs.firstIndex(of: screen) else { return }
+        let count = Screen.tabs.count
+        navigate(to: Screen.tabs[(index + offset + count) % count])
+    }
+
     // MARK: Perfis
 
     func enter(_ profile: Profile) {
         profiles.select(profile)
         library.use(profile, storage: profiles.storage)
         browser.clearFilters()
-        applyTheme(of: profile)
-        screen = .home
+        applyStyle(of: profile)
+        navigate(to: .home)
     }
 
     func showProfiles() {
         detailsGame = nil
         profilePickerIndex = profiles.profiles.firstIndex { $0.id == profiles.current?.id } ?? 0
-        screen = .profiles
+        navigate(to: .profiles)
     }
 
     func newProfile() {
-        editingProfile = ProfileDraft(profile: Profile(name: ""), isNew: true)
+        withAnimation(Motion.screen) { editingProfile = ProfileDraft(profile: Profile(name: ""), isNew: true) }
     }
 
     func edit(_ profile: Profile) {
-        editingProfile = ProfileDraft(profile: profile, isNew: false)
+        withAnimation(Motion.screen) { editingProfile = ProfileDraft(profile: profile, isNew: false) }
+    }
+
+    func closeEditor() {
+        withAnimation(Motion.screen) { editingProfile = nil }
     }
 
     func save(_ draft: ProfileDraft) {
@@ -99,37 +184,58 @@ final class AppModel {
                 notice = String(localized: "Não foi possível usar essa imagem como foto.")
             }
         }
-        if profiles.current?.id == profile.id { applyTheme(of: profiles.current) }
+        if profiles.current?.id == profile.id { applyStyle(of: profiles.current) }
         if draft.isNew { profilePickerIndex = profiles.profiles.count - 1 }
-        editingProfile = nil
+        closeEditor()
     }
 
     func delete(_ draft: ProfileDraft) {
         profiles.delete(draft.profile)
-        editingProfile = nil
+        closeEditor()
         profilePickerIndex = min(profilePickerIndex, profiles.profiles.count - 1)
         if profiles.current == nil { showProfiles() }
     }
 
-    /// Muda o tema do perfil atual (Ajustes), aplicando na hora.
+    // MARK: Estilo do perfil
+
+    var preferences: ProfilePreferences {
+        var preferences = (profiles.current ?? profiles.lastUsed)?.preferences ?? ProfilePreferences()
+        // Só para revisão visual, sem gravar no perfil: `-RetroXHomeStyle carousel|grid`.
+        if let style = UserDefaults.standard.string(forKey: "RetroXHomeStyle").flatMap(ProfilePreferences.HomeStyle.init(rawValue:)) {
+            preferences.homeStyle = style
+        }
+        return preferences
+    }
+
+    /// Muda o tema do perfil atual, aplicando na hora.
     func setTheme(_ theme: ThemeID? = nil, accent: Palette.Accent? = nil, appearance: AppearancePreference? = nil) {
         guard var profile = profiles.current else { return }
         if let theme { profile.theme = theme }
         if let accent { profile.accent = accent }
         if let appearance { profile.appearance = appearance }
         profiles.update(profile)
-        applyTheme(of: profile)
+        applyStyle(of: profile)
     }
 
-    private func applyTheme(of profile: Profile?) {
+    func updatePreferences(_ change: (inout ProfilePreferences) -> Void) {
+        guard var profile = profiles.current else { return }
+        change(&profile.preferences)
+        profiles.update(profile)
+        applyStyle(of: profile)
+    }
+
+    private func applyStyle(of profile: Profile?) {
         var selection = ThemeSelection(theme: profile?.theme ?? .retrox, accent: profile?.accent ?? .coral)
         var appearance = profile?.appearance ?? .system
         // Só para revisão visual, sem gravar no perfil: `-RetroXTheme gruvbox -RetroXAppearance light`.
         let defaults = UserDefaults.standard
         if let theme = defaults.string(forKey: "RetroXTheme").flatMap(ThemeID.init(rawValue:)) { selection.theme = theme }
         if let forced = defaults.string(forKey: "RetroXAppearance").flatMap(AppearancePreference.init(rawValue:)) { appearance = forced }
+        let preferences = profile?.preferences ?? ProfilePreferences()
         Theme.current = selection
-        themeSelection = selection
+        Typography.settings = TextSettings(fontStyle: preferences.fontStyle, scale: preferences.textSize.scale)
+        Motion.settings = MotionSettings(level: preferences.animationLevel, factor: preferences.animationSpeed.durationFactor)
+        styleIdentity = StyleIdentity(theme: selection, text: Typography.settings, motion: Motion.settings)
         self.appearance = appearance
     }
 
@@ -150,17 +256,40 @@ final class AppModel {
         await reloadLibrary()
     }
 
+    /// Controles focáveis da tela de Emuladores, na ordem em que o controle passa por eles.
+    var emulatorControls: [FocusableControl] {
+        plugins.entries.flatMap { entry -> [FocusableControl] in
+            let id = entry.id
+            var controls = [FocusableControl(id: "\(id).toggle") { [weak self] in
+                Task { await self?.setPlugin(id, enabled: !entry.config.isEnabled) }
+            }]
+            if entry.config.isEnabled {
+                controls.append(FocusableControl(id: "\(id).root") { [weak self] in Task { await self?.chooseRoot(for: id) } })
+                if let root = entry.discovery?.root {
+                    controls.append(FocusableControl(id: "\(id).rediscover") { [weak self] in Task { await self?.rediscover(id) } })
+                    controls.append(FocusableControl(id: "\(id).reveal") { NSWorkspace.shared.activateFileViewerSelecting([root]) })
+                }
+            }
+            return controls
+        }
+    }
+
+    func isFocused(emulatorControl id: String) -> Bool {
+        showsListFocus && emulatorControls.indices.contains(emulatorsFocus) && emulatorControls[emulatorsFocus].id == id
+    }
+
     // MARK: Jogos
 
     func play(_ game: Game) {
-        detailsGame = nil
+        guard !isReviewMode else { return }
+        withAnimation(Motion.screen) { detailsGame = nil }
         guard let entry = plugins.entry(game.pluginID) else { return }
         Task { await session.play(game, plugin: entry.plugin, app: entry.discovery?.app) }
     }
 
     func showDetails(_ game: Game?) {
         metadata.cancel()
-        detailsGame = game
+        withAnimation(Motion.screen) { detailsGame = game }
     }
 
     func plan(for game: Game) -> Result<PreparedLaunch, LaunchError> {
@@ -180,7 +309,7 @@ final class AppModel {
         do {
             let cover = try library.setCustomCover(for: game, from: source)
             covers.invalidate(cover)
-            detailsGame = library.game(withID: game.id)
+            if detailsGame != nil { detailsGame = library.game(withID: game.id) }
         } catch {
             notice = String(localized: "Não foi possível usar essa imagem como capa.")
         }
@@ -196,7 +325,7 @@ final class AppModel {
         switch action {
         case .chooseEmulator, .openSettings:
             session.dismiss()
-            screen = .emulators
+            navigate(to: .emulators)
         case .locateROM:
             session.dismiss()
             Task { await reloadLibrary() }
@@ -210,54 +339,80 @@ final class AppModel {
         }
     }
 
+    /// O jogo em foco na tela atual (para o fundo ambiente).
+    var ambientGame: Game? {
+        switch screen {
+        case .home: library.focusedGame
+        case .library: browser.focusedGame
+        default: nil
+        }
+    }
+
     // MARK: Entrada
 
     /// Um só roteador para teclado e controle: a mesma ação faz a mesma coisa em qualquer dispositivo.
     func handle(_ action: InputAction) {
-        if editingProfile != nil { return }
-        if session.isPresenting {
-            handleSession(action)
-        } else if let game = detailsGame {
+        guard splash == .done, !isReviewMode else { return }
+        if editingProfile != nil {
+            if action == .back { closeEditor() }
+            return
+        }
+        if session.isPresenting { return handleSession(action) }
+        if let game = detailsGame {
             switch action {
             case .confirm: play(game)
             case .back, .details: showDetails(nil)
             case .favorite: library.toggleFavorite(game)
             default: break
             }
-        } else {
-            switch screen {
-            case .profiles: handleProfiles(action)
-            case .home: handleHome(action)
-            case .library: handleLibrary(action)
-            case .emulators: if action == .back || action == .menu { screen = .home }
+            return
+        }
+        if screen != .profiles {
+            switch action {
+            case .previousTab: return cycleTab(by: -1)
+            case .nextTab: return cycleTab(by: 1)
+            case .menu: return navigate(to: screen == .settings ? .home : .settings)
+            case .options: return navigate(to: screen == .emulators ? .home : .emulators)
+            default: break
             }
+        }
+        switch screen {
+        case .profiles: handleProfiles(action)
+        case .home: handleHome(action)
+        case .library: handleLibrary(action)
+        case .emulators: handleEmulators(action)
+        case .settings: handleSettings(action)
         }
     }
 
     private func handleProfiles(_ action: InputAction) {
         let count = profiles.profiles.count
-        switch action {
-        case .left: profilePickerIndex = max(profilePickerIndex - 1, 0)
-        case .right: profilePickerIndex = min(profilePickerIndex + 1, count)
-        case .confirm:
-            if profilePickerIndex < count { enter(profiles.profiles[profilePickerIndex]) } else { newProfile() }
-        case .details:
-            if profilePickerIndex < count { edit(profiles.profiles[profilePickerIndex]) }
-        default: break
+        withAnimation(Motion.focus) {
+            switch action {
+            case .left: profilePickerIndex = max(profilePickerIndex - 1, 0)
+            case .right: profilePickerIndex = min(profilePickerIndex + 1, count)
+            case .confirm:
+                if profilePickerIndex < count { enter(profiles.profiles[profilePickerIndex]) } else { newProfile() }
+            case .details:
+                if profilePickerIndex < count { edit(profiles.profiles[profilePickerIndex]) }
+            default: break
+            }
         }
     }
 
     private func handleHome(_ action: InputAction) {
+        let isGrid = preferences.homeStyle == .grid
         switch action {
         case .left: library.moveFocus(by: -1)
         case .right: library.moveFocus(by: 1)
-        case .up, .previousShelf: library.cycleShelf(by: -1)
-        case .down, .nextShelf: library.cycleShelf(by: 1)
+        case .up: isGrid ? library.moveFocus(by: -library.homeColumns) : library.cycleShelf(by: -1)
+        case .down: isGrid ? library.moveFocus(by: library.homeColumns) : library.cycleShelf(by: 1)
+        case .previousShelf: library.cycleShelf(by: -1)
+        case .nextShelf: library.cycleShelf(by: 1)
         case .confirm: library.focusedGame.map(play)
         case .details: showDetails(library.focusedGame)
         case .favorite: library.focusedGame.map(library.toggleFavorite)
-        case .menu: screen = .emulators
-        case .back: break
+        default: break
         }
     }
 
@@ -272,9 +427,48 @@ final class AppModel {
         case .confirm: browser.focusedGame.map(play)
         case .details: showDetails(browser.focusedGame)
         case .favorite: browser.focusedGame.map(library.toggleFavorite)
-        case .menu: screen = .emulators
         case .back:
-            if browser.isFiltering { browser.clearFilters() } else { screen = .home }
+            if browser.isFiltering { browser.clearFilters() } else { navigate(to: .home) }
+        default: break
+        }
+    }
+
+    private func handleEmulators(_ action: InputAction) {
+        let controls = emulatorControls
+        showsListFocus = true
+        switch action {
+        case .up, .left: emulatorsFocus = max(emulatorsFocus - 1, 0)
+        case .down, .right: emulatorsFocus = min(emulatorsFocus + 1, max(controls.count - 1, 0))
+        case .confirm: if controls.indices.contains(emulatorsFocus) { controls[emulatorsFocus].run() }
+        case .back: navigate(to: .home)
+        default: break
+        }
+    }
+
+    private func handleSettings(_ action: InputAction) {
+        showsListFocus = true
+        let sections = SettingsSection.allCases
+        guard let row = settingsRow else {
+            let index = sections.firstIndex(of: settingsSection) ?? 0
+            switch action {
+            case .up: settingsSection = sections[max(index - 1, 0)]
+            case .down: settingsSection = sections[min(index + 1, sections.count - 1)]
+            case .right, .confirm: if !settingsRows.isEmpty { settingsRow = 0 }
+            case .back: navigate(to: .home)
+            default: break
+            }
+            return
+        }
+        let rows = settingsRows
+        guard rows.indices.contains(row) else { settingsRow = rows.isEmpty ? nil : rows.count - 1; return }
+        switch action {
+        case .up: settingsRow = max(row - 1, 0)
+        case .down: settingsRow = min(row + 1, rows.count - 1)
+        case .left: rows[row].step(by: -1)
+        case .right: rows[row].step(by: 1)
+        case .confirm: rows[row].activate()
+        case .back: settingsRow = nil
+        default: break
         }
     }
 
@@ -291,6 +485,12 @@ final class AppModel {
             break
         }
     }
+}
+
+/// Um controle que teclado e controle de jogo alcançam com as setas.
+struct FocusableControl: Identifiable {
+    let id: String
+    let run: () -> Void
 }
 
 /// Cópia de um perfil sendo editado; só vale ao salvar.

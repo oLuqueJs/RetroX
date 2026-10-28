@@ -3,53 +3,102 @@ import RetroXCore
 import SwiftUI
 
 /// Os emuladores como plugins: ativar, escolher a pasta raiz e ver o que foi encontrado nela.
+/// Tudo alcançável pelo controle (↑ ↓ passa pelos botões, A ativa).
 struct EmulatorsView: View {
     @Environment(AppModel.self) private var model
+    @FocusState private var isFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            header
-            ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.l) {
-                    ForEach(model.plugins.entries) { entry in
-                        PluginCard(entry: entry)
+        VStack(spacing: 0) {
+            ScrollViewReader { scroll in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Spacing.l) {
+                        VStack(alignment: .leading, spacing: Spacing.s) {
+                            Text("Emuladores")
+                                .font(Typography.display)
+                                .foregroundStyle(Theme.textPrimary)
+                            Text("Ative os emuladores instalados neste Mac e diga onde eles estão. O RetroX só lê essas pastas: nada é copiado, movido ou alterado.")
+                                .font(Typography.body)
+                                .foregroundStyle(Theme.textSecondary)
+                                .frame(maxWidth: 600, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        ForEach(model.plugins.entries) { entry in
+                            PluginCard(entry: entry)
+                        }
+                        if !model.plugins.otherEmulators.isEmpty {
+                            OtherEmulators()
+                        }
                     }
-                    ForEach(PluginCatalog.upcoming) { upcoming in
-                        UpcomingCard(upcoming: upcoming)
-                    }
+                    .frame(maxWidth: 880, alignment: .leading)
+                    .padding(.horizontal, Spacing.xxl)
+                    .padding(.top, Spacing.m)
+                    .padding(.bottom, Spacing.xxl)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: 760, alignment: .leading)
-                .padding(.horizontal, Spacing.xxl)
-                .padding(.bottom, Spacing.xxl)
-                // Mesma margem esquerda da tela inicial, em vez de uma coluna centralizada.
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .onChange(of: model.emulatorsFocus) { _, index in
+                    let controls = model.emulatorControls
+                    guard controls.indices.contains(index) else { return }
+                    withAnimation(Motion.focus) { scroll.scrollTo(controls[index].id, anchor: .center) }
+                }
             }
+            HintBar(items: [
+                .init(actions: [.up, .down], key: "↑  ↓", label: String(localized: "Navegar")),
+                .init(action: .confirm, key: "↩", label: String(localized: "Escolher")),
+                .init(action: .back, key: "Esc", label: String(localized: "Voltar")),
+            ], showsMenu: false)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .focusable()
+        .focusEffectDisabled()
+        .focused($isFocused)
+        .onAppear { isFocused = true }
+        .onKeyPress(phases: [.down, .repeat]) { press in
+            guard !press.modifiers.contains(.command), let action = KeyMapping.action(for: press) else { return .ignored }
+            model.handle(action)
+            return .handled
+        }
     }
+}
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: Spacing.s) {
-            Button {
-                model.screen = .home
-            } label: {
-                Label("Início", systemImage: "chevron.left")
-            }
-            .buttonStyle(SecondaryButtonStyle())
-            .keyboardShortcut(.cancelAction)
-            Text("Emuladores")
-                .font(Typography.display)
-                .foregroundStyle(Theme.textPrimary)
-                .padding(.top, Spacing.m)
-            Text("Ative os emuladores instalados neste Mac e diga onde eles estão. O RetroX só lê essas pastas: nada é copiado, movido ou alterado.")
-                .font(Typography.body)
-                .foregroundStyle(Theme.textSecondary)
-                .frame(maxWidth: 560, alignment: .leading)
-                .fixedSize(horizontal: false, vertical: true)
+extension View {
+    /// Anel de foco para controles alcançados pelo teclado ou controle de jogo.
+    func controllerFocus(_ isFocused: Bool, radius: CGFloat = 26) -> some View {
+        overlay {
+            RoundedRectangle.rx(radius)
+                .strokeBorder(Theme.accent, lineWidth: 2.5)
+                .padding(-5)
+                .opacity(isFocused ? 1 : 0)
         }
-        .padding(.leading, Spacing.xxl)
-        .padding(.top, 56)
-        .padding(.bottom, Spacing.l)
+        .scaleEffect(isFocused && Motion.settings.level == .full ? 1.03 : 1)
+        .animation(Motion.focus, value: isFocused)
+    }
+}
+
+/// Ícone do app instalado (o mesmo que o Finder mostra), ou um selo genérico.
+struct EmulatorIcon: View {
+    let appURL: URL?
+    var fallbackSystem: GameSystemID?
+    var size: CGFloat = 64
+
+    var body: some View {
+        Group {
+            if let appURL {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: appURL.path(percentEncoded: false)))
+                    .resizable()
+                    .interpolation(.high)
+                    .aspectRatio(contentMode: .fit)
+            } else if let fallbackSystem {
+                SystemBadge(system: fallbackSystem, size: size * 0.86)
+            } else {
+                Image(systemName: "puzzlepiece.extension")
+                    .font(.system(size: size * 0.36, weight: .semibold))
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(width: size * 0.86, height: size * 0.86)
+                    .background(Theme.raised, in: RoundedRectangle.rx(Radius.l))
+            }
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
     }
 }
 
@@ -58,16 +107,28 @@ private struct PluginCard: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.m) {
+        let id = entry.id.rawValue
+        VStack(alignment: .leading, spacing: Spacing.l) {
             HStack(alignment: .center, spacing: Spacing.m) {
-                SystemBadge(system: entry.plugin.systems.first ?? .ps2)
+                EmulatorIcon(appURL: entry.discovery?.app?.bundleURL, fallbackSystem: entry.plugin.systems.first, size: 72)
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(entry.plugin.displayName)
-                        .font(Typography.heading)
-                        .foregroundStyle(Theme.textPrimary)
+                    HStack(spacing: Spacing.s) {
+                        Text(entry.plugin.displayName)
+                            .font(Typography.heading)
+                            .foregroundStyle(Theme.textPrimary)
+                        if let version = entry.discovery?.app?.version {
+                            Text(version)
+                                .font(Typography.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                                .padding(.horizontal, Spacing.s)
+                                .padding(.vertical, Spacing.xxs)
+                                .background(Theme.raised, in: Capsule())
+                        }
+                    }
                     Text(entry.plugin.summary)
                         .font(Typography.caption)
                         .foregroundStyle(Theme.textSecondary)
+                    StatusPill(entry: entry)
                 }
                 Spacer()
                 Toggle("Ativado", isOn: Binding(
@@ -75,12 +136,16 @@ private struct PluginCard: View {
                     set: { isEnabled in Task { await model.setPlugin(entry.id, enabled: isEnabled) } }
                 ))
                 .toggleStyle(.switch)
-                .font(Typography.body)
+                .labelsHidden()
+                .tint(Theme.accent)
+                .padding(Spacing.xs)
+                .controllerFocus(model.isFocused(emulatorControl: "\(id).toggle"))
+                .id("\(id).toggle")
+                .accessibilityLabel("Ativar \(entry.plugin.displayName)")
             }
 
             if entry.config.isEnabled {
-                Theme.divider.frame(height: 1)
-                rootFolder
+                RootFolderRow(entry: entry)
                 if entry.isDiscovering {
                     HStack(spacing: Spacing.s) {
                         ProgressView().controlSize(.small)
@@ -88,18 +153,54 @@ private struct PluginCard: View {
                             .font(Typography.body)
                             .foregroundStyle(Theme.textSecondary)
                     }
+                    .transition(.opacity)
                 } else if let discovery = entry.discovery {
-                    DiscoveryReport(entry: entry, discovery: discovery)
+                    DiscoverySummary(entry: entry, discovery: discovery)
+                        .transition(.opacity.combined(with: .offset(y: 8)))
                 }
             }
         }
         .padding(Spacing.l)
-        .background(Theme.surface, in: RoundedRectangle.rx(Radius.l))
+        .background(Theme.surface, in: RoundedRectangle.rx(Radius.xl))
+        .animation(Motion.screen, value: entry.config.isEnabled)
+        .animation(Motion.screen, value: entry.isDiscovering)
     }
+}
 
-    private var rootFolder: some View {
+private struct StatusPill: View {
+    let entry: PluginsModel.Entry
+
+    var body: some View {
+        let (text, symbol, isGood): (String, String, Bool) = {
+            if !entry.config.isEnabled { return (String(localized: "Desativado"), "pause.circle", false) }
+            if entry.config.rootPath == nil { return (String(localized: "Escolha a pasta"), "folder.badge.questionmark", false) }
+            if entry.isDiscovering { return (String(localized: "Procurando…"), "magnifyingglass", false) }
+            if entry.isReady { return (String(localized: "Pronto"), "checkmark.circle.fill", true) }
+            return (String(localized: "Precisa de atenção"), "exclamationmark.triangle.fill", false)
+        }()
+        Label(text, systemImage: symbol)
+            .font(Typography.caption)
+            .foregroundStyle(isGood ? Theme.onAccent : Theme.textPrimary)
+            .padding(.horizontal, Spacing.s + Spacing.xxs)
+            .padding(.vertical, Spacing.xs)
+            .background(isGood ? Theme.accent : Theme.raised, in: Capsule())
+            .contentTransition(.opacity)
+    }
+}
+
+private struct RootFolderRow: View {
+    let entry: PluginsModel.Entry
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let id = entry.id.rawValue
         HStack(alignment: .center, spacing: Spacing.m) {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
+            Image(systemName: "folder.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 40, height: 40)
+                .background(Theme.raised, in: RoundedRectangle.rx(Radius.m))
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("Pasta do emulador")
                     .font(Typography.caption)
                     .foregroundStyle(Theme.textSecondary)
@@ -115,165 +216,207 @@ private struct PluginCard: View {
                 Task { await model.chooseRoot(for: entry.id) }
             }
             .buttonStyle(SecondaryButtonStyle())
+            .controllerFocus(model.isFocused(emulatorControl: "\(id).root"))
+            .id("\(id).root")
         }
+        .padding(Spacing.m)
+        .background(Theme.background.opacity(0.5), in: RoundedRectangle.rx(Radius.l))
     }
 }
 
-private struct DiscoveryReport: View {
+/// Resumo em blocos (app, jogos, capas, BIOS), avisos, ações e os detalhes recolhíveis.
+private struct DiscoverySummary: View {
     let entry: PluginsModel.Entry
     let discovery: PluginDiscovery
     @Environment(AppModel.self) private var model
 
-    private static let host = HostEnvironment.current()
-
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.s) {
+        let id = entry.id.rawValue
+        VStack(alignment: .leading, spacing: Spacing.m) {
             if discovery.issues.contains(.rootNotFound) {
                 StatusLine(kind: .warning, text: PluginIssue.rootNotFound.message)
             } else {
-                appLine
-                gamesLines
-                coversLine
-                biosLine
-                if let controller = discovery.controller {
-                    ControllerMapping(controller: controller, emulator: entry.plugin.displayName)
+                HStack(spacing: Spacing.s) {
+                    StatTile(symbol: "app.badge.checkmark", value: discovery.app == nil ? "—" : String(localized: "Encontrado"),
+                             label: discovery.app.map(appDetail) ?? String(localized: "App não encontrado"), isGood: discovery.app != nil)
+                    StatTile(symbol: "gamecontroller", value: "\(gameCount)", label: String(localized: "jogos"), isGood: gameCount > 0)
+                    StatTile(symbol: "photo.on.rectangle", value: "\(coverCount)/\(gameCount)", label: String(localized: "com capa"), isGood: coverCount > 0)
+                    StatTile(symbol: "cpu", value: biosValue, label: String(localized: "BIOS"), isGood: biosIsGood)
                 }
-                ForEach(Array(otherIssues.enumerated()), id: \.offset) { _, issue in
-                    StatusLine(kind: .warning, text: issue.message)
+                ForEach(Array(warnings.enumerated()), id: \.offset) { _, warning in
+                    StatusLine(kind: .warning, text: warning)
                 }
-                if discovery.settingsFile != nil {
-                    StatusLine(kind: .info, text: String(localized: "Lendo a configuração do \(entry.plugin.displayName) (só leitura)."))
+                HStack(spacing: Spacing.s) {
+                    Button {
+                        Task { await model.rediscover(entry.id) }
+                    } label: {
+                        Label("Procurar de novo", systemImage: "arrow.clockwise")
+                    }
+                    .controllerFocus(model.isFocused(emulatorControl: "\(id).rediscover"))
+                    .id("\(id).rediscover")
+                    Button {
+                        NSWorkspace.shared.activateFileViewerSelecting([discovery.root])
+                    } label: {
+                        Label("Mostrar no Finder", systemImage: "folder")
+                    }
+                    .controllerFocus(model.isFocused(emulatorControl: "\(id).reveal"))
+                    .id("\(id).reveal")
+                }
+                .buttonStyle(SecondaryButtonStyle())
+                DisclosureGroup {
+                    DetailsList(entry: entry, discovery: discovery)
+                        .padding(.top, Spacing.s)
+                } label: {
+                    Text("Pastas, BIOS e controle")
+                        .font(Typography.bodyEmphasis)
+                        .foregroundStyle(Theme.textPrimary)
                 }
             }
-            HStack(spacing: Spacing.s) {
-                Button {
-                    Task { await model.rediscover(entry.id) }
-                } label: {
-                    Label("Procurar de novo", systemImage: "arrow.clockwise")
-                }
-                Button {
-                    NSWorkspace.shared.activateFileViewerSelecting([discovery.root])
-                } label: {
-                    Label("Mostrar no Finder", systemImage: "folder")
-                }
-            }
-            .buttonStyle(SecondaryButtonStyle())
-            .padding(.top, Spacing.s)
         }
     }
 
-    @ViewBuilder
-    private var appLine: some View {
-        if let app = discovery.app {
-            let architectures = app.architectures.map(\.description).sorted().joined(separator: ", ")
-            let viaRosetta = Self.host.compatibility(with: app.architectures) == .rosetta
-            StatusLine(kind: .ok, text: [
-                "\(entry.plugin.displayName) \(app.version ?? "")",
-                architectures,
-                viaRosetta ? String(localized: "roda via Rosetta") : nil,
-            ].compactMap { $0?.isEmpty == false ? $0 : nil }.joined(separator: " · "))
-        } else {
-            StatusLine(kind: .warning, text: String(localized: "O app do \(entry.plugin.displayName) não está nesta pasta nem numa subpasta dela."))
+    private var gameCount: Int { model.library.gameCount(for: entry.id) }
+
+    private var coverCount: Int {
+        model.library.games.filter { $0.pluginID == entry.id && $0.coverURL != nil }.count
+    }
+
+    private func appDetail(_ app: AppBundleInfo) -> String {
+        let architectures = app.architectures.map(\.description).sorted().joined(separator: ", ")
+        let viaRosetta = HostEnvironment.current().compatibility(with: app.architectures) == .rosetta
+        return viaRosetta ? String(localized: "\(architectures) · via Rosetta") : architectures
+    }
+
+    private var biosValue: String {
+        switch discovery.bios {
+        case .configured: String(localized: "Configurada")
+        case .fileMissing: String(localized: "Ausente")
+        case .notConfigured: String(localized: "Falta")
+        case .unknown: "—"
         }
     }
 
-    @ViewBuilder
-    private var gamesLines: some View {
+    private var biosIsGood: Bool {
+        if case .configured = discovery.bios { return true }
+        return false
+    }
+
+    private var warnings: [String] {
+        var result: [String] = []
         if discovery.romDirectories.isEmpty {
-            StatusLine(kind: .warning, text: String(localized: "Nenhuma pasta de jogos. Crie uma pasta “roms” aqui ou configure a lista de jogos no próprio emulador."))
-        } else {
-            let count = model.library.gameCount(for: entry.id)
-            StatusLine(kind: .ok, text: count == 1 ? String(localized: "1 jogo encontrado") : String(localized: "\(count) jogos encontrados"))
+            result.append(String(localized: "Nenhuma pasta de jogos. Crie uma pasta “roms” aqui ou configure a lista de jogos no próprio emulador."))
+        }
+        switch discovery.bios {
+        case .fileMissing(let name): result.append(String(localized: "A BIOS configurada no emulador (\(name)) não foi encontrada."))
+        case .notConfigured: result.append(String(localized: "BIOS não configurada: abra o emulador e conclua a configuração inicial."))
+        default: break
+        }
+        for issue in discovery.issues {
+            if case .settingsFolderMissing = issue { result.append(issue.message) }
+        }
+        return result
+    }
+}
+
+private struct StatTile: View {
+    let symbol: String
+    let value: String
+    let label: String
+    let isGood: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Image(systemName: symbol)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(isGood ? Theme.accent : Theme.textSecondary)
+            Text(value)
+                .font(Typography.heading)
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(label)
+                .font(Typography.caption)
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(2)
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, minHeight: 112, alignment: .topLeading)
+        .background(Theme.background.opacity(0.5), in: RoundedRectangle.rx(Radius.l))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct DetailsList: View {
+    let entry: PluginsModel.Entry
+    let discovery: PluginDiscovery
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
             ForEach(discovery.romDirectories, id: \.self) { directory in
                 StatusLine(kind: .info, text: "\(abbreviated(directory.url)) · \(origin(directory.origin))")
-                    .padding(.leading, Spacing.l)
             }
-        }
-    }
-
-    @ViewBuilder
-    private var coversLine: some View {
-        if discovery.coverDirectories.isEmpty {
-            StatusLine(kind: .info, text: String(localized: "Capas são opcionais: crie uma pasta “covers” com imagens nomeadas como os jogos ou pelo serial do disco."))
-        } else {
-            let withCover = model.library.games.filter { $0.pluginID == entry.id && $0.coverURL != nil }.count
-            StatusLine(kind: .ok, text: String(localized: "Capas para \(withCover) de \(model.library.gameCount(for: entry.id)) jogos"))
             ForEach(discovery.coverDirectories, id: \.self) { directory in
                 let isInRoot = directory.standardizedFileURL.path(percentEncoded: false)
                     .hasPrefix(discovery.root.standardizedFileURL.path(percentEncoded: false))
-                StatusLine(kind: .info, text: "\(abbreviated(directory)) · \(isInRoot ? String(localized: "na pasta do emulador") : String(localized: "capas do \(entry.plugin.displayName)"))")
-                    .padding(.leading, Spacing.l)
+                StatusLine(kind: .info, text: "\(abbreviated(directory)) · \(isInRoot ? String(localized: "capas na pasta do emulador") : String(localized: "capas do \(entry.plugin.displayName)"))")
             }
-        }
-    }
-
-    @ViewBuilder
-    private var biosLine: some View {
-        switch discovery.bios {
-        case .configured(let name):
-            StatusLine(kind: .ok, text: String(localized: "BIOS configurada no emulador: \(name)"))
-        case .fileMissing(let name):
-            StatusLine(kind: .warning, text: String(localized: "A BIOS configurada no emulador (\(name)) não foi encontrada."))
-        case .notConfigured:
-            StatusLine(kind: .warning, text: String(localized: "BIOS não configurada: abra o emulador e conclua a configuração inicial."))
-        case .unknown:
-            StatusLine(kind: .info, text: String(localized: "Configuração do emulador não encontrada: ele pedirá a BIOS na primeira vez."))
-        }
-    }
-
-    private var otherIssues: [PluginIssue] {
-        discovery.issues.filter {
-            switch $0 {
-            case .settingsFolderMissing: true
-            default: false
+            if case .configured(let name) = discovery.bios {
+                StatusLine(kind: .ok, text: String(localized: "BIOS: \(name)"))
+            }
+            if discovery.settingsFile != nil {
+                StatusLine(kind: .info, text: String(localized: "Lendo a configuração do \(entry.plugin.displayName) (só leitura)."))
+            }
+            if let controller = discovery.controller {
+                ControllerMapping(controller: controller, emulator: entry.plugin.displayName)
+                    .padding(.top, Spacing.s)
             }
         }
     }
 
     private func origin(_ origin: ROMDirectory.Origin) -> String {
         switch origin {
-        case .rootFolder: String(localized: "na pasta do emulador")
+        case .rootFolder: String(localized: "jogos na pasta do emulador")
         case .emulatorSettings: String(localized: "da lista de jogos do \(entry.plugin.displayName)")
         }
     }
 }
 
-private struct UpcomingCard: View {
-    let upcoming: PluginCatalog.Upcoming
+/// Emuladores reconhecidos sem plugin: o planejado (Dolphin) e os que já estão instalados neste Mac.
+private struct OtherEmulators: View {
+    @Environment(AppModel.self) private var model
 
     var body: some View {
-        HStack(spacing: Spacing.m) {
-            Image(systemName: "puzzlepiece.extension")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(Theme.textSecondary)
-                .frame(width: 48, height: 48)
-                .background(Theme.raised, in: RoundedRectangle.rx(Radius.m))
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(upcoming.name)
-                    .font(Typography.heading)
-                    .foregroundStyle(Theme.textPrimary)
-                Text(upcoming.systems)
-                    .font(Typography.caption)
-                    .foregroundStyle(Theme.textSecondary)
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text("Outros emuladores")
+                .font(Typography.heading)
+                .foregroundStyle(Theme.textPrimary)
+                .padding(.top, Spacing.s)
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: Spacing.m), GridItem(.flexible(), spacing: Spacing.m)], spacing: Spacing.m) {
+                ForEach(model.plugins.otherEmulators, id: \.0.id) { emulator, app in
+                    HStack(spacing: Spacing.m) {
+                        EmulatorIcon(appURL: app, size: 48)
+                            .saturation(app == nil ? 0 : 1)
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            Text(emulator.name)
+                                .font(Typography.bodyEmphasis)
+                                .foregroundStyle(Theme.textPrimary)
+                            Text(emulator.systems)
+                                .font(Typography.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                        Spacer()
+                        Text(app == nil ? String(localized: "Em breve") : String(localized: "Instalado · plugin em breve"))
+                            .font(Typography.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                            .multilineTextAlignment(.trailing)
+                    }
+                    .padding(Spacing.m)
+                    .background(Theme.surface.opacity(0.7), in: RoundedRectangle.rx(Radius.l))
+                    .accessibilityElement(children: .combine)
+                }
             }
-            Spacer()
-            Text("Em breve")
-                .font(Typography.caption)
-                .foregroundStyle(Theme.textSecondary)
-                .padding(.horizontal, Spacing.s)
-                .padding(.vertical, Spacing.xs)
-                .background(Theme.raised, in: Capsule())
         }
-        .padding(Spacing.l)
-        .background(Theme.surface.opacity(0.6), in: RoundedRectangle.rx(Radius.l))
-        .accessibilityElement(children: .combine)
     }
-}
-
-private func abbreviated(_ url: URL) -> String {
-    (url.path(percentEncoded: false).trimmingCharacters(in: CharacterSet(charactersIn: "/")).isEmpty
-        ? "/" : (url.path(percentEncoded: false) as NSString).abbreviatingWithTildeInPath)
 }
 
 /// O mapeamento do controle configurado no emulador, só para conferir (não é alterado aqui).
@@ -282,23 +425,22 @@ private struct ControllerMapping: View {
     let emulator: String
 
     var body: some View {
-        DisclosureGroup {
-            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: Spacing.m, verticalSpacing: Spacing.xs) {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            StatusLine(kind: .ok, text: String(localized: "Controle no \(emulator): \(controller.type)\(controller.device.map { " · \($0)" } ?? "")"))
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: Spacing.s), GridItem(.flexible(), spacing: Spacing.s)], alignment: .leading, spacing: Spacing.xs) {
                 ForEach(controller.bindings, id: \.self) { binding in
-                    GridRow {
+                    HStack(spacing: Spacing.s) {
                         Text(Self.ps2Name(binding.button))
                             .font(Typography.bodyEmphasis)
                             .foregroundStyle(Theme.textPrimary)
+                            .frame(width: 44, alignment: .leading)
                         Text(Self.inputName(binding.input))
-                            .font(Typography.body)
+                            .font(Typography.caption)
                             .foregroundStyle(Theme.textSecondary)
                     }
                 }
             }
-            .padding(.top, Spacing.s)
             .padding(.leading, Spacing.l)
-        } label: {
-            StatusLine(kind: .ok, text: String(localized: "Controle no \(emulator): \(controller.type)\(controller.device.map { " · \($0)" } ?? "")"))
         }
     }
 
@@ -339,4 +481,8 @@ private struct ControllerMapping: View {
         ]
         return names[name] ?? input
     }
+}
+
+private func abbreviated(_ url: URL) -> String {
+    (url.path(percentEncoded: false) as NSString).abbreviatingWithTildeInPath
 }

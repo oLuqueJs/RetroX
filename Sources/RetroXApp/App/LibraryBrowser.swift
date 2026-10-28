@@ -7,12 +7,13 @@ import RetroXCore
 @Observable
 final class LibraryBrowser {
     enum Layout: String, CaseIterable, Identifiable {
-        case covers, largeCovers, titledCovers, list
+        case compact, covers, largeCovers, titledCovers, list
 
         var id: Self { self }
 
         var title: String {
             switch self {
+            case .compact: String(localized: "Capas pequenas")
             case .covers: String(localized: "Capas")
             case .largeCovers: String(localized: "Capas grandes")
             case .titledCovers: String(localized: "Capas e nomes")
@@ -22,6 +23,7 @@ final class LibraryBrowser {
 
         var symbol: String {
             switch self {
+            case .compact: "square.grid.4x3.fill"
             case .covers: "square.grid.3x3"
             case .largeCovers: "square.grid.2x2"
             case .titledCovers: "rectangle.grid.2x2"
@@ -32,6 +34,7 @@ final class LibraryBrowser {
         /// Largura da capa em cada forma de exibir (a lista usa uma miniatura).
         var tileWidth: CGFloat {
             switch self {
+            case .compact: 96
             case .covers: 128
             case .largeCovers: 184
             case .titledCovers: 148

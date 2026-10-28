@@ -9,7 +9,6 @@ struct HomeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TopBar()
             content
             HintBar(items: [
                 .init(action: .confirm, key: "↩", label: String(localized: "Jogar")),
@@ -42,9 +41,16 @@ struct HomeView: View {
         } else if library.games.isEmpty {
             EmptyHome(kind: .noGames)
         } else {
-            StageView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            ShelfView()
+            switch model.preferences.homeStyle {
+            case .shelf:
+                StageView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ShelfView()
+            case .carousel:
+                CarouselHome()
+            case .grid:
+                GridHome()
+            }
         }
     }
 }
@@ -63,6 +69,8 @@ enum KeyMapping {
         default: break
         }
         switch press.characters.lowercased() {
+        case "[": return .previousTab
+        case "]": return .nextTab
         case "f": return .favorite
         case "q": return .previousShelf
         case "e": return .nextShelf
@@ -92,7 +100,7 @@ private struct StageView: View {
                     }
                     .padding(.horizontal, Spacing.xxl)
                     .id(game.id)
-                    .transition(.opacity.combined(with: .offset(x: reduceMotion ? 0 : 12)))
+                    .transition(.opacity.combined(with: .offset(x: Motion.allowsMovement(reduceMotion: reduceMotion) ? 12 : 0)))
                 } else {
                     EmptyShelfMessage(shelf: model.library.shelf)
                         .padding(.horizontal, Spacing.xxl)
@@ -224,7 +232,7 @@ struct EmptyHome: View {
                 .fixedSize(horizontal: false, vertical: true)
             if kind != .loading {
                 Button(kind == .noEmulator ? "Ativar emuladores" : "Abrir Emuladores") {
-                    model.screen = .emulators
+                    model.navigate(to: .emulators)
                 }
                 .buttonStyle(PrimaryButtonStyle())
                 .padding(.top, Spacing.s)
@@ -287,7 +295,7 @@ struct HintBar: View {
             }
             Spacer()
             if showsMenu {
-                CommandHint(glyphs: glyphs[.menu].map { [$0] }, key: "M", label: String(localized: "Emuladores"))
+                CommandHint(glyphs: glyphs[.menu].map { [$0] }, key: "M", label: String(localized: "Ajustes"))
             }
         }
         .padding(.horizontal, Spacing.xxl)

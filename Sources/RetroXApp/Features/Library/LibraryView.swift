@@ -10,7 +10,6 @@ struct LibraryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TopBar()
             LibraryToolbar(isSearchFocused: $isSearchFocused)
             content
             HintBar(items: [
@@ -265,7 +264,7 @@ private struct GridTile: View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             CoverArtView(game: game, width: layout.tileWidth)
                 .overlay(alignment: .topTrailing) {
-                    if isFavorite {
+                    if isFavorite && model.preferences.showsFavoriteBadge {
                         Image(systemName: "star.fill")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(Theme.onAccent)
@@ -286,7 +285,7 @@ private struct GridTile: View {
                     radius: isFocused ? 16 : (isHovered ? 12 : 5),
                     y: isFocused || isHovered ? 8 : 3
                 )
-                .scaleEffect(!reduceMotion && (isFocused || isHovered) ? 1.03 : 1)
+                .scaleEffect(Motion.allowsMovement(reduceMotion: reduceMotion) && (isFocused || isHovered) ? 1.03 : 1)
             if layout == .titledCovers {
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(game.title)

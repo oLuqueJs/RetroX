@@ -66,7 +66,7 @@ private struct ProfileTile: View {
                         .opacity(isFocused ? 1 : 0)
                 }
                 .shadow(color: isFocused ? Theme.accent.opacity(0.4) : .black.opacity(0.12), radius: isFocused ? 24 : 8, y: isFocused ? 10 : 4)
-                .scaleEffect(isFocused && !reduceMotion ? 1.08 : 1)
+                .scaleEffect(isFocused && Motion.allowsMovement(reduceMotion: reduceMotion) ? 1.08 : 1)
             Text(profile.name)
                 .font(Typography.heading)
                 .foregroundStyle(isFocused ? Theme.textPrimary : Theme.textSecondary)
@@ -111,7 +111,7 @@ private struct AddProfileTile: View {
                         .padding(-8)
                         .opacity(isFocused ? 1 : 0)
                 }
-                .scaleEffect(isFocused && !reduceMotion ? 1.08 : 1)
+                .scaleEffect(isFocused && Motion.allowsMovement(reduceMotion: reduceMotion) ? 1.08 : 1)
             Text("Adicionar")
                 .font(Typography.heading)
                 .foregroundStyle(isFocused ? Theme.textPrimary : Theme.textSecondary)

@@ -126,6 +126,7 @@ struct ThemeGallery: View {
     @Binding var selection: ThemeID
     @Binding var accent: Palette.Accent
     var columns = 4
+    var showsAccents = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
@@ -135,7 +136,7 @@ struct ThemeGallery: View {
                         .onTapGesture { withAnimation(Motion.focus) { selection = theme } }
                 }
             }
-            if selection == .retrox {
+            if selection == .retrox && showsAccents {
                 HStack(spacing: Spacing.m) {
                     Text("Acento")
                         .font(Typography.caption)

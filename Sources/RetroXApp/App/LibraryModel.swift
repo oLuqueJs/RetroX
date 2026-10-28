@@ -30,8 +30,11 @@ final class LibraryModel {
     private(set) var hasLoaded = false
     private(set) var shelf: Shelf = .all
     private(set) var focusedGameID: Game.ID?
+    /// Colunas da grade da tela inicial (estilo Grade), para mover o foco para cima e para baixo.
+    var homeColumns = 1
 
     @ObservationIgnored private var scanned: [Game] = []
+    @ObservationIgnored private var startShelf: ProfilePreferences.StartShelf = .automatic
     @ObservationIgnored private var historyStore: JSONFileStore<[String: GameHistory]>?
     @ObservationIgnored let artwork: ArtworkStorage
 
@@ -45,8 +48,19 @@ final class LibraryModel {
     func use(_ profile: Profile, storage: ProfileStorage) {
         historyStore = storage.history(for: profile.id)
         history = historyStore?.load() ?? [:]
-        shelf = shelves.contains(.recent) ? .recent : .all
+        startShelf = profile.preferences.startShelf
+        shelf = initialShelf
         focusedGameID = visibleGames.first?.id
+    }
+
+    /// A prateleira escolhida nas preferências; Recentes só se houver algo jogado.
+    private var initialShelf: Shelf {
+        let hasRecent = shelves.contains(.recent)
+        switch startShelf {
+        case .automatic, .recent: return hasRecent ? .recent : .all
+        case .all: return .all
+        case .favorites: return .favorites
+        }
     }
 
     // MARK: Prateleiras (tela inicial)
@@ -129,8 +143,8 @@ final class LibraryModel {
         let isFirstLoad = !hasLoaded
         hasLoaded = true
         isScanning = false
-        if isFirstLoad, shelves.contains(.recent) {
-            shelf = .recent
+        if isFirstLoad {
+            shelf = initialShelf
         } else if !shelves.contains(shelf) {
             shelf = .all
         }

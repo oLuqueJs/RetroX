@@ -1,12 +1,64 @@
 import GameController
 import Observation
+import RetroXCore
 
 /// Ações semânticas da interface. Teclado e controle produzem as mesmas ações (ADR-0007).
 enum InputAction: Hashable, Sendable {
     case up, down, left, right
     case confirm, back, details, favorite
     case previousShelf, nextShelf
+    /// Gatilhos (LT/RT, L2/R2, ZL/ZR) e `[` `]`: trocam a aba de cima.
+    case previousTab, nextTab
+    /// Start / Options / +: Ajustes.
     case menu
+    /// View / Create / −: Emuladores.
+    case options
+}
+
+/// Velocidade da repetição ao segurar uma direção.
+enum RepeatSpeed: String, CaseIterable, Identifiable {
+    case slow, normal, fast
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .slow: String(localized: "Lenta")
+        case .normal: String(localized: "Normal")
+        case .fast: String(localized: "Rápida")
+        }
+    }
+
+    var initialDelay: Duration {
+        switch self {
+        case .slow: .milliseconds(480)
+        case .normal: .milliseconds(380)
+        case .fast: .milliseconds(280)
+        }
+    }
+
+    var interval: Duration {
+        switch self {
+        case .slow: .milliseconds(140)
+        case .normal: .milliseconds(90)
+        case .fast: .milliseconds(55)
+        }
+    }
+}
+
+/// Quando mostrar glifos de controle na barra de comandos.
+enum HintsMode: String, CaseIterable, Identifiable {
+    case automatic, keyboard, controller
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .automatic: String(localized: "Automático")
+        case .keyboard: String(localized: "Teclado")
+        case .controller: String(localized: "Controle")
+        }
+    }
 }
 
 /// Traduz o controle de jogo em `InputAction`, com repetição ao segurar uma direção.
@@ -15,10 +67,13 @@ enum InputAction: Hashable, Sendable {
 @Observable
 final class InputCoordinator {
     private(set) var controllerName: String?
-    /// Símbolos SF do controle conectado para cada ação (ex.: "xmark.circle" num controle PlayStation).
-    private(set) var glyphs: [InputAction: String] = [:]
-    /// Layout estilo Nintendo: o botão da direita confirma e o de baixo volta.
+    /// Família detectada do controle conectado (para o preset automático).
+    private(set) var detectedPreset: ControllerPreset?
+    private(set) var preset: ControllerPreset
+    /// Inverte confirmar e voltar em relação ao preset.
     private(set) var swapsConfirmAndBack: Bool
+    private(set) var repeatSpeed: RepeatSpeed
+    private(set) var hintsMode: HintsMode
     /// Última ação recebida do controle e um contador, para o teste nos Ajustes.
     private(set) var lastAction: InputAction?
     private(set) var actionCount = 0
@@ -27,12 +82,14 @@ final class InputCoordinator {
     @ObservationIgnored private var heldDirection: InputAction?
     @ObservationIgnored private var repeatTask: Task<Void, Never>?
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
-
-    static let initialRepeatDelay: Duration = .milliseconds(400)
-    static let repeatInterval: Duration = .milliseconds(90)
+    @ObservationIgnored private var controllerGlyphs: [ControllerControl: String] = [:]
+    @ObservationIgnored private let defaults = UserDefaults.standard
 
     init() {
+        preset = UserDefaults.standard.string(forKey: "input.preset").flatMap(ControllerPreset.init(rawValue:)) ?? .automatic
         swapsConfirmAndBack = UserDefaults.standard.bool(forKey: "input.swapConfirmBack")
+        repeatSpeed = UserDefaults.standard.string(forKey: "input.repeatSpeed").flatMap(RepeatSpeed.init(rawValue:)) ?? .normal
+        hintsMode = UserDefaults.standard.string(forKey: "input.hints").flatMap(HintsMode.init(rawValue:)) ?? .automatic
         // Com o emulador na frente, o RetroX não deve receber nada do controle (é o default; fica explícito).
         GCController.shouldMonitorBackgroundEvents = false
         let center = NotificationCenter.default
@@ -46,6 +103,82 @@ final class InputCoordinator {
         refreshCurrentController()
     }
 
+    // MARK: Ajustes
+
+    func setPreset(_ preset: ControllerPreset) {
+        self.preset = preset
+        defaults.set(preset.rawValue, forKey: "input.preset")
+        refreshCurrentController()
+    }
+
+    func setSwapsConfirmAndBack(_ swaps: Bool) {
+        swapsConfirmAndBack = swaps
+        defaults.set(swaps, forKey: "input.swapConfirmBack")
+        refreshCurrentController()
+    }
+
+    func setRepeatSpeed(_ speed: RepeatSpeed) {
+        repeatSpeed = speed
+        defaults.set(speed.rawValue, forKey: "input.repeatSpeed")
+    }
+
+    func setHintsMode(_ mode: HintsMode) {
+        hintsMode = mode
+        defaults.set(mode.rawValue, forKey: "input.hints")
+    }
+
+    // MARK: Glifos
+
+    /// O preset que vale agora: o escolhido, ou o detectado no automático.
+    var effectivePreset: ControllerPreset {
+        preset == .automatic ? (detectedPreset ?? .xbox) : preset
+    }
+
+    /// Confirmar fica no botão da direita no layout Nintendo, ou quando o usuário inverte.
+    var confirmsWithEastButton: Bool {
+        effectivePreset.confirmsWithEastButton != swapsConfirmAndBack
+    }
+
+    /// Mostrar glifos de controle (e não teclas) na barra de comandos.
+    var showsControllerGlyphs: Bool {
+        switch hintsMode {
+        case .automatic: controllerName != nil
+        case .keyboard: false
+        case .controller: true
+        }
+    }
+
+    /// Símbolos SF para cada ação, conforme o preset (ou o próprio controle, no automático).
+    var glyphs: [InputAction: String] {
+        guard showsControllerGlyphs else { return [:] }
+        var result: [InputAction: String] = [:]
+        for (action, control) in controls {
+            let symbol = preset == .automatic
+                ? (controllerGlyphs[control] ?? effectivePreset.glyph(for: control))
+                : preset.glyph(for: control)
+            result[action] = symbol
+        }
+        return result
+    }
+
+    /// Qual controle físico dispara cada ação.
+    private var controls: [InputAction: ControllerControl] {
+        [
+            .confirm: confirmsWithEastButton ? .east : .south,
+            .back: confirmsWithEastButton ? .south : .east,
+            .details: .west,
+            .favorite: .north,
+            .previousShelf: .leftShoulder,
+            .nextShelf: .rightShoulder,
+            .previousTab: .leftTrigger,
+            .nextTab: .rightTrigger,
+            .menu: .menu,
+            .options: .options,
+        ]
+    }
+
+    // MARK: Controle
+
     private func attach(_ controller: GCController) {
         guard let pad = controller.extendedGamepad else { return }
         // O GameController entrega os eventos na fila principal (handlerQueue padrão).
@@ -55,20 +188,29 @@ final class InputCoordinator {
         pad.leftThumbstick.valueChangedHandler = { [weak self] _, x, y in
             MainActor.assumeIsolated { self?.hold(Self.direction(x: x, y: y, threshold: 0.6)) }
         }
-        let (south, east): (InputAction, InputAction) = swapsConfirmAndBack ? (.back, .confirm) : (.confirm, .back)
-        let buttons: [(GCControllerButtonInput?, InputAction)] = [
-            (pad.buttonA, south), (pad.buttonB, east), (pad.buttonX, .details), (pad.buttonY, .favorite),
-            (pad.leftShoulder, .previousShelf), (pad.rightShoulder, .nextShelf), (pad.buttonMenu, .menu),
+        let east = confirmsWithEastButton
+        let buttons: [(GCControllerButtonInput?, ControllerControl, InputAction)] = [
+            (pad.buttonA, .south, east ? .back : .confirm),
+            (pad.buttonB, .east, east ? .confirm : .back),
+            (pad.buttonX, .west, .details),
+            (pad.buttonY, .north, .favorite),
+            (pad.leftShoulder, .leftShoulder, .previousShelf),
+            (pad.rightShoulder, .rightShoulder, .nextShelf),
+            (pad.leftTrigger, .leftTrigger, .previousTab),
+            (pad.rightTrigger, .rightTrigger, .nextTab),
+            (pad.buttonMenu, .menu, .menu),
+            (pad.buttonOptions, .options, .options),
         ]
-        for (button, action) in buttons {
+        for (button, _, action) in buttons {
             button?.pressedChangedHandler = { [weak self] _, _, pressed in
                 guard pressed else { return }
                 MainActor.assumeIsolated { self?.send(action) }
             }
         }
         controllerName = controller.vendorName ?? String(localized: "Controle")
-        glyphs = Dictionary(uniqueKeysWithValues: buttons.compactMap { button, action in
-            button?.sfSymbolsName.map { (action, $0) }
+        detectedPreset = ControllerPreset.detect(productCategory: controller.productCategory)
+        controllerGlyphs = Dictionary(uniqueKeysWithValues: buttons.compactMap { button, control, _ in
+            button?.sfSymbolsName.map { (control, $0) }
         })
     }
 
@@ -78,14 +220,9 @@ final class InputCoordinator {
             attach(next)
         } else {
             controllerName = nil
-            glyphs = [:]
+            detectedPreset = nil
+            controllerGlyphs = [:]
         }
-    }
-
-    func setSwapsConfirmAndBack(_ swaps: Bool) {
-        swapsConfirmAndBack = swaps
-        UserDefaults.standard.set(swaps, forKey: "input.swapConfirmBack")
-        refreshCurrentController()
     }
 
     private func send(_ action: InputAction) {
@@ -101,11 +238,12 @@ final class InputCoordinator {
         repeatTask?.cancel()
         guard let direction else { return }
         send(direction)
+        let speed = repeatSpeed
         repeatTask = Task { [weak self] in
-            try? await Task.sleep(for: Self.initialRepeatDelay)
+            try? await Task.sleep(for: speed.initialDelay)
             while !Task.isCancelled {
                 self?.send(direction)
-                try? await Task.sleep(for: Self.repeatInterval)
+                try? await Task.sleep(for: speed.interval)
             }
         }
     }

@@ -117,17 +117,28 @@ public struct PluginConfig: Codable, Sendable, Equatable {
     }
 }
 
-/// Plugins que o RetroX oferece. Os "em breve" aparecem na tela de emuladores, mas não podem ser ativados.
+/// Plugins que o RetroX oferece, e outros emuladores que ele reconhece (ainda sem plugin).
 public enum PluginCatalog {
-    public struct Upcoming: Sendable, Identifiable {
+    /// Emulador conhecido sem plugin: aparece em Emuladores se estiver instalado (ou se o plugin estiver planejado).
+    public struct KnownEmulator: Sendable, Identifiable {
         public let id: String
         public let name: String
         public let systems: String
+        /// Bundle IDs para procurar o app instalado pelo LaunchServices.
+        public let bundleIdentifiers: [String]
+        /// Plugin no plano (PRD); aparece mesmo sem estar instalado.
+        public let isPlanned: Bool
     }
 
     public static let available: [any EmulatorPlugin] = [PCSX2Plugin()]
 
-    public static let upcoming: [Upcoming] = [
-        Upcoming(id: "dolphin", name: "Dolphin", systems: "GameCube · Wii"),
+    public static let known: [KnownEmulator] = [
+        KnownEmulator(id: "dolphin", name: "Dolphin", systems: "GameCube · Wii", bundleIdentifiers: ["org.dolphin-emu.dolphin"], isPlanned: true),
+        KnownEmulator(id: "ryujinx", name: "Ryujinx", systems: "Switch", bundleIdentifiers: ["org.ryujinx.Ryujinx"], isPlanned: false),
+        KnownEmulator(id: "rpcs3", name: "RPCS3", systems: "PS3", bundleIdentifiers: ["net.rpcs3.rpcs3"], isPlanned: false),
+        KnownEmulator(id: "ppsspp", name: "PPSSPP", systems: "PSP", bundleIdentifiers: ["org.ppsspp.ppsspp"], isPlanned: false),
+        KnownEmulator(id: "duckstation", name: "DuckStation", systems: "PS1", bundleIdentifiers: ["com.github.stenzek.duckstation"], isPlanned: false),
+        KnownEmulator(id: "melonds", name: "melonDS", systems: "NDS", bundleIdentifiers: ["net.kuribo64.melonDS"], isPlanned: false),
+        KnownEmulator(id: "cemu", name: "Cemu", systems: "Wii U", bundleIdentifiers: ["info.cemu.Cemu"], isPlanned: false),
     ]
 }
