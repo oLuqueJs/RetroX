@@ -55,9 +55,10 @@ o mantenedor muda o alvo.
 - O PR exige o CI verde e é integrado com **squash merge**. O título do PR vira o commit na `beta`,
   então ele precisa seguir o padrão de commits abaixo.
 - Depois do merge, a branch é apagada.
-- A versão estável sai quando o mantenedor integra a `beta` na `main`, por um PR com **merge commit**
-  (sem squash). Depois de um hotfix ou de uma mudança direto na `main`, a `main` é integrada de volta
-  na `beta`.
+- A versão estável sai quando o mantenedor integra a `beta` na `main`, também por **squash merge**. O
+  título desse PR é o commit que define a versão, então usa o tipo da mudança mais relevante
+  (`feat: novo tema e capas do Azahar`), e um `BREAKING CHANGE:` vai na descrição. Em seguida, a `main` é
+  integrada de volta na `beta`; o mesmo vale depois de qualquer mudança direto na `main`.
 
 ### Enviando código por fork e pull request
 

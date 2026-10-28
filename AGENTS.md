@@ -48,18 +48,30 @@ Rules:
 3. Keep branches short-lived and focused on one change.
 4. Open a pull request to `beta`. Required: CI (workflow "Testes") green.
    Contributions from forks follow the same rule.
-5. PRs into `beta` are merged with **squash merge**. The PR title becomes the
-   commit on `beta`, so it must be a valid Conventional Commit, in Portuguese:
-   `feat(biblioteca): detecta capas do Azahar`.
+5. All PRs, including `beta` -> `main`, are merged with **squash merge**. The
+   PR title becomes the commit, so it must be a valid Conventional Commit, in
+   Portuguese: `feat(biblioteca): detecta capas do Azahar`.
 6. Delete the branch after merge.
 7. Never merge without human approval, never force-push `main` or `beta`,
    never skip hooks or CI.
 
 ### Promoting to stable
 
-A stable release happens when a PR `beta` -> `main` is merged, after the
-pre-release was tested. That PR uses a **merge commit**, not squash, so release
-notes keep their detail. Never open it without being asked.
+A stable release happens when a PR `beta` -> `main` is squash merged, after the
+pre-release was tested. Never open it without being asked.
+
+Because the squash commit is the only commit semantic-release reads on `main`:
+
+- The title is a Conventional Commit whose **type matches the highest-impact
+  change** being promoted: `feat` if any feature, otherwise `fix` (or `chore`).
+  Example: `feat: novo tema Rayo Paradise e capas do Azahar`.
+- If any promoted change has a `BREAKING CHANGE`, repeat it as a
+  `BREAKING CHANGE: <description>` footer in the PR description, which becomes
+  the commit body.
+- The squash commit message must use "pull request title and description".
+- Right after the merge, merge `main` back into `beta`. Without this, the
+  promoted commits are not ancestors of `main` and the next promotion PR
+  conflicts or lists them again.
 
 ### Exceptions to go straight to `main`
 
