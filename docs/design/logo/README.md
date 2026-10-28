@@ -1,6 +1,6 @@
 # Kit da marca RetroX
 
-A marca é a **Rayo** (o tile) e o nome **RetroX**, com o "X" em gradiente. Tudo aqui é gerado a partir de
+A marca é a **Rayo** (o tile) e o nome **RetroX**, com o "X" em gradiente no escuro e sólido no claro. Tudo aqui é gerado a partir de
 `docs/design/rayo/rayo.png` por `swift scripts/brand-kit.swift`; para mudar o kit, mude o original ou o script,
 nunca os PNGs à mão.
 
@@ -26,31 +26,32 @@ Toda medida vem da **altura das maiúsculas (C)** do nome, em SF Pro Rounded Hea
 - **Empilhada:** tile = 3C, centrado sobre o nome. Do pé do tile ao topo das maiúsculas: 1C.
 - **"o→X":** o X tem recuo lateral largo, então o par leva um aperto extra de −4,5% do corpo. Assim todos os vãos
   entre as letras ficam iguais.
-- **O X:** a própria letra da fonte, com gradiente (sem contorno, sombra ou recorte).
-- **Gradiente do X:** do canto de cima à esquerda ao de baixo à direita. A cor inicial
-  segura até 30% e então caminha até a final, misturada em OKLCH (o meio fica vivo, sem o cinza da mistura em RGB).
+- **O X:** a própria letra da fonte (sem contorno, sombra ou recorte).
+- **Sobre o escuro:** gradiente do canto de cima à esquerda ao de baixo à direita. A cor inicial segura até 30% e
+  então caminha até a final, misturada em OKLCH (o meio fica vivo, sem o cinza da mistura em RGB).
+- **Sobre o claro:** framboesa sólida. O gradiente framboesa → azul, testado, ficava roxo e pesado sobre o claro.
 - **Respiro:** no mínimo 1C livre em volta da assinatura.
 - **Tamanho mínimo:** horizontal com nome a partir de 16 pt; abaixo disso, só o tile.
 
 No app, `BrandLockup`, `BrandWordmark`, `BrandX` e `BrandMark` (`Sources/RetroXApp/DesignSystem/Brand.swift`) aplicam
-as mesmas regras. Lá o gradiente do X vai da cor de destaque do tema até o céu da Rayo (`#7BADFD` no escuro,
-`#2F6BDF` no claro); no tema Rayo Paradise isso reproduz exatamente as cores do kit. `ThemeTests` confere que o X
-tem pelo menos 3:1 sobre o fundo em todo o gradiente, em todos os temas.
+as mesmas regras. Lá o X usa a cor de destaque do tema: sólida no claro e, no escuro, em gradiente até o céu da Rayo
+(`#7BADFD`). No tema Rayo Paradise isso reproduz exatamente as cores do kit. `ThemeTests` confere que o X tem pelo
+menos 3:1 sobre o fundo em todos os temas.
 
 ## Cores
 
 | Nome | Hex | Uso |
 |---|---|---|
 | Rosa Rayo → Céu Rayo | `#FEB5B8` → `#7BADFD` | Gradiente do X sobre o escuro (≥ 7,7:1 sobre `#1B1916`) |
-| Framboesa → Azul elétrico | `#D63A62` → `#2F6BDF` | Gradiente do X sobre o claro (pior ponto 3,99:1 sobre `#F4F0EA`) |
+| Framboesa | `#D63A62` | X sólido sobre o claro (3,99:1 sobre `#F4F0EA`) |
 | Tinta / Papel | `#1E1B18` / `#F3EEE7` | "Retro" sobre o claro / sobre o escuro |
 | Noite / Dia | `#1B1916` / `#F4F0EA` | Fundos de referência |
 
 ## Não fazer
 
 - Não recortar, girar nem trocar a ilustração do tile; não pôr a Rayo em círculo (vira foto de perfil).
-- Não colorir o "Retro", não pintar o X de uma cor só nem trocar a direção do gradiente.
-- Não usar o gradiente do escuro sobre fundo claro (some) nem o do claro sobre o escuro.
+- Não colorir o "Retro", não pintar de uma cor só o X sobre o escuro nem trocar a direção do gradiente.
+- Não usar o gradiente do escuro sobre fundo claro (some) nem pôr gradiente no X sobre o claro.
 - Não aproximar o tile do nome além de 0,75C, nem centralizar o nome pela caixa do texto (fica baixo).
 
 ## Cabeçalho para o README do projeto

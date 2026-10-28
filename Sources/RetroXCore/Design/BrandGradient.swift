@@ -50,11 +50,12 @@ extension HexColor {
 }
 
 extension Palette {
-    /// Fim do gradiente do X da marca: o céu do fundo do tile da Rayo, mais fundo no claro (docs/design/logo).
-    public static let brandXEnd = Tone(light: "2F6BDF", dark: "7BADFD")
+    /// Fim do gradiente do X da marca no escuro: o céu do fundo do tile da Rayo (docs/design/logo).
+    public static let brandXSky = HexColor("7BADFD")
 
-    /// Paradas do gradiente do X: da cor de destaque do tema até o céu da Rayo.
+    /// Paradas do X da marca. No escuro, do destaque do tema até o céu da Rayo; no claro, o próprio destaque,
+    /// sólido (o gradiente roxo ficava pesado sobre o fundo claro).
     public static func brandXStops(_ palette: ThemePalette, dark: Bool) -> [HexColor] {
-        HexColor.oklchStops(from: palette.accent, to: dark ? brandXEnd.dark : brandXEnd.light)
+        dark ? HexColor.oklchStops(from: palette.accent, to: brandXSky) : [palette.accent, palette.accent]
     }
 }

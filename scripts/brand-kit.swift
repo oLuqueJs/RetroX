@@ -24,18 +24,17 @@ func hexString(_ color: NSColor) -> String {
 enum Palette {
     static let rose = hex(0xFEB5B8)       // cabelo da Rayo: início do X sobre o escuro
     static let sky = hex(0x7BADFD)        // fundo do tile: fim do X sobre o escuro
-    static let raspberry = hex(0xD63A62)  // início do X sobre o claro
-    static let electric = hex(0x2F6BDF)   // fim do X sobre o claro
+    static let raspberry = hex(0xD63A62)  // o X sobre o claro: sólido, sem gradiente
     static let ink = hex(0x1E1B18), paper = hex(0xF3EEE7)
     static let night = hex(0x1B1916), day = hex(0xF4F0EA)
     static let board = hex(0x262320), muted = hex(0xADA59B)
 }
 
-/// Cores de uma assinatura: o "Retro" e as duas pontas do gradiente do X.
+/// Cores de uma assinatura: o "Retro" e as duas pontas do gradiente do X (iguais = X sólido).
 struct Tone {
     let text, from, to: NSColor
     static let onDark = Tone(text: Palette.paper, from: Palette.rose, to: Palette.sky)
-    static let onLight = Tone(text: Palette.ink, from: Palette.raspberry, to: Palette.electric)
+    static let onLight = Tone(text: Palette.ink, from: Palette.raspberry, to: Palette.raspberry)
 }
 
 // MARK: Gradiente em OKLCH
@@ -118,7 +117,7 @@ func drawTile(in rect: NSRect) {
 // MARK: O X
 
 /// O X da marca: a letra da fonte com gradiente, do canto de cima à esquerda ao de baixo à direita. A cor inicial
-/// segura até 30% e então caminha até a final, misturada em OKLCH.
+/// segura até 30% e então caminha até a final, misturada em OKLCH. Sobre o claro as duas cores são iguais: sólido.
 enum BrandX {
     static func draw(glyph: CGPath, size: CGFloat, tone: Tone, in ctx: CGContext) {
         let b = glyph.boundingBoxOfPath
@@ -365,7 +364,7 @@ let board = render(width: boardWidth, height: boardHeight, background: Palette.b
     Palette.day.setFill(); NSBezierPath(roundedRect: NSRect(x: 64 + square + 24, y: squareY, width: square, height: square), xRadius: 24, yRadius: 24).fill()
     place(xDark, centerX: 64 + square / 2, centerY: squareY + square / 2, scale: square / 512)
     place(xLight, centerX: 64 + square * 1.5 + 24, centerY: squareY + square / 2, scale: square / 512)
-    caption("Gradiente em OKLCH", x: 64, y: squareY - 56, color: Palette.paper, size: 20, weight: .regular, tracking: 0)
+    caption("Escuro: gradiente em OKLCH · Claro: sólido", x: 64, y: squareY - 56, color: Palette.paper, size: 20, weight: .regular, tracking: 0)
 
     // Cores
     let colorsX: CGFloat = 740
@@ -376,11 +375,12 @@ let board = render(width: boardWidth, height: boardHeight, background: Palette.b
         NSBezierPath(roundedRect: rect, xRadius: 32, yRadius: 32).addClip()
         NSGradient(colors: OKLCH.stops(from: tone.from, to: tone.to))!.draw(in: rect, angle: 0)
         NSGraphicsContext.restoreGraphicsState()
-        caption("\(hexString(tone.from)) → \(hexString(tone.to))", x: colorsX + 644, y: y + 30, color: Palette.paper, size: 20, weight: .semibold, tracking: 0)
+        let codes = hexString(tone.from) == hexString(tone.to) ? hexString(tone.from) : "\(hexString(tone.from)) → \(hexString(tone.to))"
+        caption(codes, x: colorsX + 644, y: y + 30, color: Palette.paper, size: 20, weight: .semibold, tracking: 0)
         caption(label, x: colorsX + 644, y: y + 4, size: 18, weight: .regular, tracking: 0)
     }
     gradientBar(.onDark, y: 430, label: "X sobre o escuro")
-    gradientBar(.onLight, y: 330, label: "X sobre o claro")
+    gradientBar(.onLight, y: 330, label: "X sobre o claro (sólido)")
     let chips: [(NSColor, String)] = [(Palette.ink, "Tinta"), (Palette.paper, "Papel"), (Palette.night, "Noite"), (Palette.day, "Dia")]
     for (i, chip) in chips.enumerated() {
         let x = colorsX + CGFloat(i) * 235

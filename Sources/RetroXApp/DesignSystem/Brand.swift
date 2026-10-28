@@ -87,8 +87,8 @@ struct BrandXGeometry {
     }
 }
 
-/// O X da marca (docs/design/logo/README.md): a letra com gradiente da cor de destaque do tema até o céu da Rayo,
-/// misturado em OKLCH, do canto de cima à esquerda ao de baixo à direita.
+/// O X da marca (docs/design/logo/README.md): a letra com a cor de destaque do tema. No escuro leva um gradiente
+/// até o céu da Rayo, misturado em OKLCH, do canto de cima à esquerda ao de baixo à direita; no claro é sólido.
 struct BrandX: View {
     let size: CGFloat
     @Environment(\.colorScheme) private var colorScheme
