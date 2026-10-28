@@ -2,7 +2,7 @@ import AppKit
 import RetroXCore
 import SwiftUI
 
-/// Abertura do app: um gesto só. A Rayo aparece e o nome desliza de trás dela, na assinatura horizontal
+/// Abertura do app: um gesto só. A Rayo aparece e o nome se revela a partir dela, na assinatura horizontal
 /// do kit (a mesma da barra superior); depois tudo esmaece revelando a tela de perfis. Com Reduzir
 /// Movimento, os dois só esmaecem.
 struct SplashView: View {
@@ -24,12 +24,10 @@ struct SplashView: View {
                     .scaleEffect(shown || !moves ? 1 : 0.9)
                     .opacity(shown ? 1 : 0)
                     .animation(moves ? .smooth(duration: 0.5 * f) : Motion.fade, value: shown)
-                    .zIndex(1)
-                BrandWordmark(size: Self.wordSize)
+                            BrandWordmark(size: Self.wordSize)
                     .alignmentGuide(VerticalAlignment.center) { $0[.firstTextBaseline] - metrics.capHeight / 2 }
-                    .offset(x: shown || !moves ? 0 : -metrics.capHeight)
                     .opacity(shown ? 1 : 0)
-                    // O nome sai de trás do tile: a máscara abre da esquerda para a direita.
+                    // O nome se escreve a partir do tile: a máscara abre da esquerda para a direita.
                     .mask(alignment: .leading) {
                         Rectangle().scaleEffect(x: shown || !moves ? 1 : 0, anchor: .leading)
                     }

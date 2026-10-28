@@ -12,8 +12,8 @@ nunca os PNGs à mão.
 |---|---|
 | `retrox-icon-1024.png` | Ícone na grade do macOS (corpo 824/1024, cantos transparentes). O `.icns` fica em `Support/RetroX.icns` |
 | `retrox-tile-512.png` | Só o tile, sem margem: avatares, favicons, redes |
-| `retrox-lockup-on-dark.png` / `-on-light.png` | Assinatura horizontal (padrão) |
-| `retrox-stacked-on-dark.png` / `-on-light.png` | Assinatura empilhada: abertura, telas de boas-vindas |
+| `retrox-lockup-on-dark.png` / `-on-light.png` | Assinatura horizontal (padrão; barra superior e abertura do app) |
+| `retrox-stacked-on-dark.png` / `-on-light.png` | Assinatura empilhada: espaços estreitos e verticais (README, redes) |
 | `retrox-wordmark-on-dark.png` / `-on-light.png` | Só o nome, quando a Rayo já está por perto |
 
 ## Alinhamento
