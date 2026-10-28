@@ -2,27 +2,35 @@
 <div align="center">
   <img src="./docs/design/logo/retrox-lockup-on-light.png#gh-light-mode-only" alt="RetroX" width="360" />
   <img src="./docs/design/logo/retrox-lockup-on-dark.png#gh-dark-mode-only" alt="RetroX" width="360" />
-</div>
-
----
-
-RetroX é um launcher nativo para macOS que reúne numa biblioteca visual os jogos de vários consoles e abre cada um no emulador externo que você já tem instalado. Funciona todo pelo teclado ou pelo controle, com perfis, temas e uma prateleira no estilo de console. O RetroX não inclui emuladores, jogos, BIOS nem chaves, e nunca copia, move ou altera os seus arquivos de jogo.
-
-<div align="center">
-  <a href="https://www.swift.org/"><img alt="Swift" src="https://img.shields.io/badge/swift-%23F54A2A.svg?style=for-the-badge&amp;logo=swift&amp;logoColor=white" /></a>
-  <a href="https://www.apple.com/macos/"><img alt="macOS" src="https://img.shields.io/badge/mac%20os-%23000000.svg?style=for-the-badge&amp;logo=macos&amp;logoColor=F0F0F0&amp;logoSize=auto" /></a>
-  <a href="https://github.com/oLuqueJs/RetroX/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&amp;logo=githubactions&amp;logoColor=white" /></a>
+  <p>Seus jogos, seus emuladores, uma só biblioteca.</p>
 </div>
 
 <div align="center">
-  <a href="https://github.com/oLuqueJs/RetroX/actions/workflows/tests.yml"><img alt="Status do workflow de testes" src="https://img.shields.io/github/actions/workflow/status/oLuqueJs/RetroX/tests.yml?style=flat&amp;label=testes" /></a>
-  <a href="https://github.com/oLuqueJs/RetroX/releases"><img alt="Versão da release" src="https://img.shields.io/github/v/release/oLuqueJs/RetroX?style=flat" /></a>
-  <a href="./LICENSE"><img alt="Licença" src="https://img.shields.io/github/license/oLuqueJs/RetroX?style=flat" /></a>
-  <a href="https://github.com/oLuqueJs/RetroX/commits/main/"><img alt="Atividade semanal de commits" src="https://img.shields.io/github/commit-activity/w/oLuqueJs/RetroX?style=flat" /></a>
-  <a href="https://github.com/oLuqueJs/RetroX/stargazers"><img alt="Estrelas no GitHub" src="https://img.shields.io/github/stars/oLuqueJs/RetroX?style=flat" /></a>
+  <a href="https://www.swift.org/"><img alt="Swift" src="https://img.shields.io/badge/swift-%23F54A2A.svg?style=flat-square&amp;logo=swift&amp;logoColor=white" /></a>
+  <a href="https://www.apple.com/macos/"><img alt="macOS" src="https://img.shields.io/badge/mac%20os-%23000000.svg?style=flat-square&amp;logo=macos&amp;logoColor=F0F0F0&amp;logoSize=auto" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/github%20actions-%232671E5.svg?style=flat-square&amp;logo=githubactions&amp;logoColor=white" /></a>
 </div>
 
+<div align="center">
+  <a href="https://github.com/oLuqueJs/RetroX/actions/workflows/tests.yml"><img alt="Status do workflow de testes" src="https://img.shields.io/github/actions/workflow/status/oLuqueJs/RetroX/tests.yml?style=flat-square&amp;label=testes" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/releases"><img alt="Versão da release" src="https://img.shields.io/github/v/release/oLuqueJs/RetroX?style=flat-square" /></a>
+  <a href="./LICENSE"><img alt="Licença" src="https://img.shields.io/github/license/oLuqueJs/RetroX?style=flat-square" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/commits/main/"><img alt="Atividade semanal de commits" src="https://img.shields.io/github/commit-activity/w/oLuqueJs/RetroX?style=flat-square" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/stargazers"><img alt="Estrelas no GitHub" src="https://img.shields.io/github/stars/oLuqueJs/RetroX?style=flat-square" /></a>
+</div>
+
+<p align="center">
+  <a href="#instalação">Instalação</a> ·
+  <a href="#como-usar">Como usar</a> ·
+  <a href="#desenvolvimento">Desenvolvimento</a> ·
+  <a href="#documentação">Documentação</a>
+</p>
+
 ---
+
+RetroX é um launcher nativo para macOS que reúne seus jogos em uma biblioteca visual e os abre nos emuladores que você já tem instalados. Navegue pelo teclado ou controle, personalize perfis e temas, e volte à biblioteca quando terminar de jogar.
+
+O RetroX não inclui emuladores, jogos, BIOS ou chaves. Ele lê suas pastas de jogos sem copiar, mover ou alterar os arquivos.
 
 ## Instalação
 
@@ -42,19 +50,21 @@ Requisitos: macOS 14 ou superior e os emuladores instalados por você. Hoje o Re
 4. Em **Detalhes**, troque a capa de um jogo ou busque informações na Wikipedia.
 5. Em **Ajustes**, escolha tema, fonte, visualização da tela inicial (Prateleira, Carrossel ou Grade), animações e o tipo de controle. Cada perfil guarda os seus.
 
-**Teclado:** setas navegam, `[` `]` (ou ⌘1–⌘4) trocam de aba, Q/E troca de prateleira ou de console, Espaço abre os detalhes, F favorita, / busca na Biblioteca, M (ou ⌘,) abre os Ajustes, Esc volta.
+### Controles
 
-**Controle:** o app inteiro funciona pelo controle. O botão de baixo confirma (o da direita no layout Nintendo), o da direita volta, os gatilhos trocam de aba e Start abre os Ajustes. Em Ajustes > Controle dá para escolher os glifos de Xbox, PlayStation (DualSense) ou Switch.
+| Ação | Teclado | Controle |
+| --- | --- | --- |
+| Navegar | Setas | Direcional ou analógico |
+| Confirmar ou jogar | Enter | Botão de confirmar¹ |
+| Voltar | Esc | Botão de voltar |
+| Trocar de aba | `[` / `]` ou ⌘1–⌘4 | Gatilhos |
+| Trocar prateleira ou console | Q / E | Botões superiores |
+| Abrir detalhes | Espaço | Botão de detalhes |
+| Favoritar | F | Botão de favorito |
+| Buscar na biblioteca | `/` | — |
+| Abrir ajustes | M ou ⌘, | Start |
 
-## Documentação
-
-* [PRD](docs/PRD.md): produto, escopo, requisitos e critérios de aceite
-* [Decisões de arquitetura](docs/adr/): ADRs de interface, distribuição, plugins de emulador, launch, metadados e mais
-* [Decisões e pendências](docs/DECISOES.md): decisões do projeto, suposições de trabalho e o que falta
-* [Spikes](docs/spikes/): evidências de testes técnicos com emuladores reais
-* [Design](docs/design/brand-spec.md): cores, temas, tipografia, movimento e a marca
-* [Kit da marca](docs/design/logo/README.md): a Rayo, as assinaturas e as regras de uso
-* [Origem](docs/origem/): especificação original usada para planejar o projeto
+¹ Por padrão, o botão inferior confirma; no layout Nintendo, é o botão da direita. Em **Ajustes > Controle**, escolha os glifos de Xbox, PlayStation (DualSense) ou Switch.
 
 ## Desenvolvimento
 
@@ -125,6 +135,16 @@ O RetroX é escrito em Swift 6 (concorrência estrita) com SwiftUI e AppKit, e i
 * `Support/`: `Info.plist` e ícone do app
 * `scripts/`: build, testes, empacotamento e geração da marca
 * `docs/`: produto, ADRs, decisões, spikes e design
+
+## Documentação
+
+- [PRD](docs/PRD.md) — produto, escopo e critérios de aceite
+- [Decisões de arquitetura](docs/adr/) — interface, plugins, lançamento e metadados
+- [Decisões e pendências](docs/DECISOES.md) — escolhas e próximos passos
+- [Estratégia de testes](docs/TESTING.md) — mocks, integração e emuladores
+- [Spikes](docs/spikes/) — evidências com emuladores reais
+- [Design](docs/design/brand-spec.md) e [kit da marca](docs/design/logo/README.md) — identidade e componentes
+- [Origem](docs/origem/) — especificação original do projeto
 
 ## Licença
 
