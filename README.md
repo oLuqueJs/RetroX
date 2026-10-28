@@ -1,8 +1,32 @@
-# RetroX
 
-Launcher nativo para macOS que reúne numa biblioteca visual os jogos de vários consoles e abre cada um no emulador externo que o usuário já tem instalado. O RetroX não inclui emuladores, jogos, BIOS nem chaves, e não copia, move ou altera os arquivos de jogo.
+<div align="center">
+  <img src="./docs/design/logo/retrox-lockup-on-light.png#gh-light-mode-only" alt="RetroX" width="360" />
+  <img src="./docs/design/logo/retrox-lockup-on-dark.png#gh-dark-mode-only" alt="RetroX" width="360" />
+</div>
 
-**Status:** Sprint 1 (launch com PCSX2, home e emuladores como plugins). Nome anterior provisório: ConsoleShelf.
+---
+
+RetroX é um launcher nativo para macOS que reúne numa biblioteca visual os jogos de vários consoles e abre cada um no emulador externo que você já tem instalado. Funciona todo pelo teclado ou pelo controle, com perfis, temas e uma prateleira no estilo de console. O RetroX não inclui emuladores, jogos, BIOS nem chaves, e nunca copia, move ou altera os seus arquivos de jogo.
+
+<div align="center">
+  <img src="https://img.shields.io/github/actions/workflow/status/oLuqueJs/RetroX/tests.yml?style=flat&label=testes" />
+  <img src="https://img.shields.io/github/v/release/oLuqueJs/RetroX?style=flat" />
+  <img src="https://img.shields.io/github/license/oLuqueJs/RetroX?style=flat" />
+  <img src="https://img.shields.io/github/commit-activity/w/oLuqueJs/RetroX?style=flat" />
+  <img src="https://img.shields.io/github/stars/oLuqueJs/RetroX?style=flat" />
+</div>
+
+---
+
+## Instalação
+
+### macOS (Apple Silicon)
+
+1. Baixe `RetroX-<versão>.zip` na [página de Releases](https://github.com/oLuqueJs/RetroX/releases) e confira o `SHA256SUMS.txt`.
+2. Descompacte e mova o `RetroX.app` para `/Applications`.
+3. Na primeira vez, abra com o botão direito > **Abrir**. O app tem assinatura ad hoc e não é notarizado, então o Gatekeeper pede autorização.
+
+Requisitos: macOS 14 ou superior e os emuladores instalados por você. Hoje o RetroX suporta o **PCSX2** (PS2); o Dolphin (GameCube/Wii) está planejado.
 
 ## Como usar
 
@@ -12,31 +36,42 @@ Launcher nativo para macOS que reúne numa biblioteca visual os jogos de vários
 4. Em **Detalhes**, troque a capa de um jogo ou busque informações na Wikipedia.
 5. Em **Ajustes**, escolha tema, fonte, visualização da tela inicial (Prateleira, Carrossel ou Grade), animações e o tipo de controle. Cada perfil guarda os seus.
 
-Teclado: setas navegam, `[` `]` (ou ⌘1–⌘4) trocam de aba, Q/E troca de prateleira ou de console, Espaço abre os detalhes, F favorita, / busca na Biblioteca, M (ou ⌘,) abre os Ajustes, Esc volta.
+**Teclado:** setas navegam, `[` `]` (ou ⌘1–⌘4) trocam de aba, Q/E troca de prateleira ou de console, Espaço abre os detalhes, F favorita, / busca na Biblioteca, M (ou ⌘,) abre os Ajustes, Esc volta.
 
-Controle: o app inteiro funciona pelo controle. O botão de baixo confirma (o da direita no layout Nintendo), o da direita volta, os gatilhos trocam de aba, Start abre os Ajustes. Em Ajustes > Controle dá para escolher os glifos de Xbox, PlayStation (DualSense) ou Switch.
+**Controle:** o app inteiro funciona pelo controle. O botão de baixo confirma (o da direita no layout Nintendo), o da direita volta, os gatilhos trocam de aba e Start abre os Ajustes. Em Ajustes > Controle dá para escolher os glifos de Xbox, PlayStation (DualSense) ou Switch.
 
-Nada nas pastas dos jogos é copiado, movido ou alterado.
+## Documentação
 
-## Requisitos
+* [PRD](docs/PRD.md): produto, escopo, requisitos e critérios de aceite
+* [Decisões de arquitetura](docs/adr/): ADRs de interface, distribuição, plugins de emulador, launch, metadados e mais
+* [Decisões e pendências](docs/DECISOES.md): decisões do projeto, suposições de trabalho e o que falta
+* [Spikes](docs/spikes/): evidências de testes técnicos com emuladores reais
+* [Design](docs/design/brand-spec.md): cores, temas, tipografia, movimento e a marca
+* [Kit da marca](docs/design/logo/README.md): a Rayo, as assinaturas e as regras de uso
+* [Origem](docs/origem/): especificação original usada para planejar o projeto
 
-- macOS 14 ou superior.
-- Para compilar: Swift 6 (Command Line Tools ou Xcode). A persistência (Fase 2 em diante) exige o Xcode.
-- Emuladores instalados pelo usuário. Hoje: PCSX2 (PS2). Dolphin (GameCube/Wii) está planejado.
+## Desenvolvimento
 
-## Compilar, testar e rodar
+Para compilar: Swift 6, com as Command Line Tools ou o Xcode. A persistência das próximas fases vai exigir o Xcode.
 
 ```sh
 scripts/check-toolchain.sh        # o que o toolchain atual consegue (Xcode, SwiftData, Rosetta)
 swift build                       # app, ferramentas e núcleo
-scripts/test.sh                   # testes unitários (Swift Testing)
-scripts/integration-launch.sh     # abre um emulador falso de verdade e confere o argv
-RX_NETWORK=1 scripts/test.sh --filter MetadataNetworkTests   # busca real na Wikipedia (opt-in)
 scripts/bundle-app.sh debug       # monta .build/RetroX.app (assinatura ad hoc)
 open .build/RetroX.app
 ```
 
-Diagnóstico de launch sem a interface (o mesmo código do app):
+### Testes
+
+```sh
+scripts/test.sh                   # testes unitários (Swift Testing)
+scripts/integration-launch.sh     # abre um emulador falso de verdade e confere o argv
+RX_NETWORK=1 scripts/test.sh --filter MetadataNetworkTests   # busca real na Wikipedia (opt-in)
+```
+
+### Diagnóstico de launch
+
+Sem a interface, com o mesmo código do app:
 
 ```sh
 swift run rx-launch-probe --app /Applications/PCSX2.app --rom "/caminho/do/jogo.iso" --dry-run
@@ -44,31 +79,49 @@ swift run rx-launch-probe --app /Applications/PCSX2.app --rom "/caminho/do/jogo.
 
 Sem `--dry-run`, o emulador é aberto de verdade.
 
-## Documentação
+### Marca
 
-- [`docs/PRD.md`](docs/PRD.md): produto, escopo, requisitos e critérios de aceite.
-- [`docs/adr/`](docs/adr/): decisões de arquitetura.
-- [`docs/DECISOES.md`](docs/DECISOES.md): decisões do usuário, suposições e pendências.
-- [`docs/spikes/`](docs/spikes/): evidências de testes técnicos com emuladores reais.
-- [`docs/origem/`](docs/origem/): especificação original usada para planejar o projeto.
+O ícone, o tile e as assinaturas são gerados a partir de `docs/design/rayo/rayo.png`:
 
-Ilustrações, logos e telas de terceiros citados como inspiração não são usados no projeto.
+```sh
+swift scripts/brand-kit.swift
+```
 
-## Releases
+### Releases
 
-O workflow de testes do GitHub Actions testa e valida o pacote em pull requests, pushes
-para branches fora de `main` e execuções manuais. O workflow de release reutiliza esses
-mesmos testes no commit enviado a `main`. Após os testes de um push em `main`, o semantic-release analisa os commits convencionais,
-cria a tag e publica uma GitHub Release quando há alterações que justificam uma nova versão.
-O ZIP do `RetroX.app` para Apple Silicon e seu SHA-256 ficam anexados à release.
-A primeira versão automática será `1.0.0` se ainda não houver uma tag de release.
+O workflow de testes do GitHub Actions roda em pull requests, em pushes para branches fora de `main` e em execuções manuais. O workflow de release reutiliza esses testes no commit enviado a `main`. Depois deles, o semantic-release analisa os commits convencionais, cria a tag e publica uma GitHub Release quando há mudanças que justificam uma nova versão, com o ZIP do `RetroX.app` para Apple Silicon e o SHA-256 anexados. A primeira versão automática será `1.0.0`.
 
-Para gerar o pacote localmente em um Mac, execute `scripts/package-app.sh 1.2.3`.
-O arquivo é criado em `dist/` para a arquitetura do computador, com assinatura ad hoc;
-o Gatekeeper pode bloquear sua abertura em outro Mac.
+Para gerar o pacote localmente, execute `scripts/package-app.sh 1.2.3`. O arquivo vai para `dist/`, para a arquitetura do computador, com assinatura ad hoc. Cada execução do workflow também deixa um pacote de teste (versão `0.0.0`) em **Artifacts**. Não é preciso conta Apple: não há notarização, e o macOS pode pedir autorização para abrir o app.
 
-O pacote de teste e seu checksum também ficam disponíveis na seção **Artifacts** da
-execução do workflow no GitHub Actions. Esse pacote usa a versão `0.0.0` e serve para
-validar o commit executado. As releases versionadas continuam disponíveis em **Releases**.
-Não é necessária uma conta Apple para gerar esses arquivos. A assinatura é ad hoc e
-não há notarização; o macOS pode exigir que o usuário autorize a abertura do app.
+## Detalhes de implementação
+
+O RetroX é escrito em Swift 6 (concorrência estrita) com SwiftUI e AppKit, e inclui:
+
+* Núcleo (`RetroXCore`) sem interface, testável só com as Command Line Tools
+* Emuladores como plugins, com detecção do app, das pastas de jogos, das capas e da BIOS
+* Launch pelo LaunchServices com argumentos em array, sem shell, e retorno automático quando o emulador fecha
+* Biblioteca não destrutiva: lê as pastas de jogos e nunca escreve nelas
+* Metadados offline primeiro, com busca opcional na Wikipedia
+* Navegação completa por teclado e controle (GameController), com glifos por tipo de controle
+* 11 temas com variante clara e escura, contraste conferido por testes
+
+## Estrutura do projeto
+
+* `Sources/RetroXCore/`: domínio, plugins de emulador, launch, biblioteca, perfis, metadados e temas
+* `Sources/RetroXApp/`: o app em SwiftUI (telas, sistema de design, entrada por controle) e os recursos da marca
+* `Sources/RXLaunchProbe/`: CLI de diagnóstico de launch
+* `Sources/RXFakeEmulator/`: emulador falso usado nos testes de integração
+* `Tests/RetroXCoreTests/`: testes unitários e de integração
+* `Support/`: `Info.plist` e ícone do app
+* `scripts/`: build, testes, empacotamento e geração da marca
+* `docs/`: produto, ADRs, decisões, spikes e design
+
+## Licença
+
+Copyright © 2026 Otávio Luque ([yukaritake@proton.me](mailto:yukaritake@proton.me)).
+
+Este projeto é licenciado sob a GNU General Public License v3.0. Veja [LICENSE](LICENSE) para os detalhes.
+
+Mesmo com a licença GPL, fique à vontade para entrar em contato se quiser usar o RetroX num projeto proprietário. Estou aberto a combinar licenças alternativas caso a caso.
+
+PCSX2, Dolphin e os nomes de consoles citados pertencem aos seus respectivos donos. O RetroX não é afiliado a eles, e ilustrações, logos e telas de terceiros citados como inspiração não são usados no projeto.
