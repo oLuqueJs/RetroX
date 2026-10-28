@@ -6,16 +6,19 @@
 </div>
 
 <div align="center">
-  <a href="https://www.swift.org/"><img alt="Swift" src="https://img.shields.io/badge/swift-%23F54A2A.svg?style=flat-square&amp;logo=swift&amp;logoColor=white" /></a>
-  <a href="https://www.apple.com/macos/"><img alt="macOS" src="https://img.shields.io/badge/mac%20os-%23000000.svg?style=flat-square&amp;logo=macos&amp;logoColor=F0F0F0&amp;logoSize=auto" /></a>
+  <a href="https://www.swift.org/"><img alt="Swift" src="https://img.shields.io/badge/Swift-C7472A?style=for-the-badge&amp;logo=swift&amp;logoColor=white" /></a>
+  <a href="https://www.apple.com/macos/"><img alt="macOS" src="https://img.shields.io/badge/macOS-C7472A?style=for-the-badge&amp;logo=macos&amp;logoColor=white" /></a>
 </div>
 
 <div align="center">
-  <a href="https://github.com/oLuqueJs/RetroX/actions/workflows/tests.yml"><img alt="Status do workflow de testes" src="https://img.shields.io/github/actions/workflow/status/oLuqueJs/RetroX/tests.yml?style=flat-square&amp;label=testes" /></a>
-  <a href="https://github.com/oLuqueJs/RetroX/releases"><img alt="Versão da release" src="https://img.shields.io/github/v/release/oLuqueJs/RetroX?style=flat-square" /></a>
-  <a href="./LICENSE"><img alt="Licença" src="https://img.shields.io/github/license/oLuqueJs/RetroX?style=flat-square" /></a>
-  <a href="https://github.com/oLuqueJs/RetroX/commits/main/"><img alt="Atividade semanal de commits" src="https://img.shields.io/github/commit-activity/w/oLuqueJs/RetroX?style=flat-square" /></a>
-  <a href="https://github.com/oLuqueJs/RetroX/stargazers"><img alt="Estrelas no GitHub" src="https://img.shields.io/github/stars/oLuqueJs/RetroX?style=flat-square" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/actions/workflows/tests.yml"><img alt="Status do workflow de testes" src="https://img.shields.io/github/actions/workflow/status/oLuqueJs/RetroX/tests.yml?style=for-the-badge&amp;label=testes&amp;labelColor=262320&amp;logo=github&amp;logoColor=white" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/releases"><img alt="Versão da release" src="https://img.shields.io/github/v/release/oLuqueJs/RetroX?style=for-the-badge&amp;label=vers%C3%A3o&amp;labelColor=262320&amp;color=C7472A&amp;logo=github&amp;logoColor=white" /></a>
+  <a href="./LICENSE"><img alt="Licença" src="https://img.shields.io/github/license/oLuqueJs/RetroX?style=for-the-badge&amp;label=licen%C3%A7a&amp;labelColor=262320&amp;color=C7472A&amp;logo=gnu&amp;logoColor=white" /></a>
+</div>
+
+<div align="center">
+  <a href="https://github.com/oLuqueJs/RetroX/commits/main/"><img alt="Atividade semanal de commits" src="https://img.shields.io/github/commit-activity/w/oLuqueJs/RetroX?style=for-the-badge&amp;label=commits&amp;labelColor=262320&amp;color=C7472A&amp;logo=git&amp;logoColor=white" /></a>
+  <a href="https://github.com/oLuqueJs/RetroX/stargazers"><img alt="Estrelas no GitHub" src="https://img.shields.io/github/stars/oLuqueJs/RetroX?style=for-the-badge&amp;label=estrelas&amp;labelColor=262320&amp;color=C7472A&amp;logo=github&amp;logoColor=white" /></a>
 </div>
 
 <p align="center">
