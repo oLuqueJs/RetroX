@@ -1,6 +1,6 @@
 # ADR-0003 — Adapters de emulador com validação e launch tipados
 
-**Status:** Proposto | **Data:** 2026-10-27
+**Status:** Aceito | **Data:** 2026-10-27
 
 ## Contexto
 Emuladores possuem executáveis, formatos e argumentos diferentes. Um launcher genérico baseado em string de shell é frágil e inseguro.
@@ -17,3 +17,8 @@ Um switch gigante por console (evolui mal); comando livre sem validação (arris
 ## Referências
 - https://github.com/PCSX2/pcsx2-net-www/blob/main/docs/advanced/cli.md
 - https://github.com/dolphin-emu/dolphin/blob/master/Readme.md
+
+## Emenda (2026-10-27)
+- O adapter não executa nada: ele produz um `LaunchPlan` puro (app, executável, argumentos, estratégia). O plano é testável sem processo real e é o que o modo simulado exibe.
+- A escolha entre `NSWorkspace` e `Process` por adapter será registrada no ADR-0011, com a evidência do spike `docs/spikes/0001-launch-pcsx2-macos.md`.
+- Política para emulador já aberto: o RetroX não encerra o emulador e não cria nova instância por padrão; oferece trazê-lo para frente.

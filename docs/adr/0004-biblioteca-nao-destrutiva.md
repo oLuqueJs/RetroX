@@ -1,6 +1,6 @@
 # ADR-0004 — Biblioteca indexada não destrutiva
 
-**Status:** Proposto | **Data:** 2026-10-27
+**Status:** Aceito | **Data:** 2026-10-27
 
 ## Contexto
 ROMs podem estar em múltiplos discos, diretórios e mídias removíveis. Copiar tudo gera uso de espaço e risco de perda de dados.
@@ -13,3 +13,8 @@ Importação rápida e menor custo de armazenamento, mas requer controle de arqu
 
 ## Alternativas
 Copiar toda a biblioteca (uso de disco elevado); symlinks gerenciados (fragilidade); reescrever a estrutura de origem (risco desnecessário).
+
+## Emenda (2026-10-27)
+- A fonte guarda um bookmark comum (sem security scope) da pasta raiz, além do último caminho conhecido. Cada jogo guarda só o caminho relativo à fonte.
+- `sourceOffline` (volume desmontado, bookmark irresolúvel) é diferente de `missing` (arquivo sumiu de uma fonte acessível). Fonte offline nunca marca jogos como ausentes.
+- Fontes sobrepostas (uma dentro da outra) são bloqueadas ao adicionar.

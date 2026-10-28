@@ -1,6 +1,6 @@
 # ADR-0009 — Segurança, logs e observabilidade locais
 
-**Status:** Proposto | **Data:** 2026-10-27
+**Status:** Aceito | **Data:** 2026-10-27
 
 ## Contexto
 O app pode iniciar programas externos escolhidos pelo usuário e ler estruturas de pastas pessoais.
@@ -13,3 +13,7 @@ Menos risco e maior previsibilidade; troubleshooting requer logs locais bem deli
 
 ## Alternativas
 Logging irrestrito de paths, execução de comandos livres e telemetria automática (rejeitados).
+
+## Emenda (2026-10-27)
+- Os argumentos de um launch são logados com caminhos marcados como `.private`.
+- Argumentos extras do usuário são tokenizados ao salvar, guardados como array e validados contra uma lista de flags que o adapter gerencia (por exemplo `--`, `-batch`, `--exec`).

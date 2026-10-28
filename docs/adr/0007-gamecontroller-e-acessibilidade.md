@@ -1,6 +1,6 @@
 # ADR-0007 — Navegação por controle e acessibilidade no sistema de foco
 
-**Status:** Proposto | **Data:** 2026-10-27
+**Status:** Aceito | **Data:** 2026-10-27
 
 ## Contexto
 A experiência de console depende de navegação previsível por controle, mas precisa continuar totalmente funcional em teclado e mouse.
@@ -13,3 +13,7 @@ Melhor consistência, ao custo de lidar com reconexão, múltiplos gamepads e re
 
 ## Alternativas
 Depender só de focus engine automática (pode não bastar); handlers soltos em cada View (comportamento divergente).
+
+## Emenda (2026-10-27)
+- `GCController.shouldMonitorBackgroundEvents` fica `false` (default desde o macOS 11.3), de forma explícita: com o emulador em primeiro plano, o RetroX não recebe input do controle.
+- O `InputCoordinator` só atua no Console Mode. No Library Mode vale o foco nativo do macOS.

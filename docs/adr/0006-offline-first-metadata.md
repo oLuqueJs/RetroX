@@ -1,6 +1,6 @@
 # ADR-0006 — Offline-first; metadata e capas opcionais
 
-**Status:** Proposto | **Data:** 2026-10-27
+**Status:** Aceito | **Data:** 2026-10-27
 
 ## Contexto
 O launcher deve ser útil sem contas/API/network, e provedores de capa podem fornecer correspondências incorretas ou ter limites de uso.

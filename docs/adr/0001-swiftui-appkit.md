@@ -1,6 +1,6 @@
 # ADR-0001 — SwiftUI como UI principal e AppKit seletivo
 
-**Status:** Proposto | **Data:** 2026-10-27
+**Status:** Aceito | **Data:** 2026-10-27
 
 ## Contexto
 Precisamos de uma aplicação nativa macOS com experiência visual de console, navegação por mouse/teclado/controle e integração com janelas e processos.
@@ -13,3 +13,7 @@ Integração macOS e rápida iteração visual, porém foco avançado, entrada d
 
 ## Alternativas
 AppKit-only (mais boilerplate); renderizador custom com Metal (complexidade injustificada no MVP); frontend web (não atende objetivo nativo).
+
+## Emenda (2026-10-27)
+- View models são `@Observable` e isolados em `@MainActor`; regras de negócio ficam no target `RetroXCore`, sem SwiftUI.
+- Foco e teclado usam as APIs do macOS 14: `@FocusState`, `.focusable`, `.onKeyPress` e `.onMoveCommand`.

@@ -1,17 +1,21 @@
-# ConsoleShelf — pacote de especificação para Claude Code
+# RetroX
 
-Contém:
+Launcher nativo para macOS que reúne numa biblioteca visual os jogos de vários consoles e abre cada um no emulador externo que o usuário já tem instalado. O RetroX não inclui emuladores, jogos, BIOS nem chaves, e não copia, move ou altera os arquivos de jogo.
 
-- `PROMPT_CLAUDE_CODE.md`: instruções de primeira sessão em Plan Mode.
-- `docs/PRD.md`: produto, escopo, requisitos e critérios de aceite.
-- `docs/adr/`: decisões de arquitetura propostas (não finalizadas).
-- `ConsoleShelf_PROMPT_COMPLETO.md` (também disponível separadamente): tudo em um único texto para copiar e colar.
+**Status:** Sprint 1 (prova técnica do launch com PCSX2). Nome anterior provisório: ConsoleShelf.
 
-## Como usar
+## Requisitos
 
-1. Extraia este pacote no repositório vazio do projeto.
-2. No terminal do macOS, execute `claude --permission-mode plan` (ou abra `claude` e use `/plan`).
-3. Envie ao Claude Code: `Leia @PROMPT_CLAUDE_CODE.md, @docs/PRD.md e todos os @docs/adr/*.md. Produza o plano solicitado, sem implementar antes de minha aprovação.`
-4. Revise o plano e **só depois** autorize a implementação, começando pela prova de conceito PCSX2.
+- macOS 14 ou superior.
+- Para compilar: Swift 6 (Command Line Tools ou Xcode). A persistência (Fase 2 em diante) exige o Xcode.
+- Emuladores instalados pelo usuário. Hoje: PCSX2 (PS2). Dolphin (GameCube/Wii) está planejado.
 
-**Nota:** A documentação citada é referência técnica, não licença para copiar ativos ou código de terceiros.
+## Documentação
+
+- [`docs/PRD.md`](docs/PRD.md): produto, escopo, requisitos e critérios de aceite.
+- [`docs/adr/`](docs/adr/): decisões de arquitetura.
+- [`docs/DECISOES.md`](docs/DECISOES.md): decisões do usuário, suposições e pendências.
+- [`docs/spikes/`](docs/spikes/): evidências de testes técnicos com emuladores reais.
+- [`docs/origem/`](docs/origem/): especificação original usada para planejar o projeto.
+
+Ilustrações, logos e telas de terceiros citados como inspiração não são usados no projeto.

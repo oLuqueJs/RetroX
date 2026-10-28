@@ -1,10 +1,12 @@
-# PRD — ConsoleShelf (Product Requirements Document)
+# PRD — RetroX (Product Requirements Document)
 
-**Versão:** 0.1 | **Status:** proposta para validação | **Plataforma:** macOS 14+ | **Idioma da interface inicial:** português do Brasil (arquitetura pronta para localização)
+**Versão:** 0.2 | **Status:** revisado após o plano técnico (ver §12) | **Plataforma:** macOS 14+ | **Idioma da interface inicial:** português do Brasil (arquitetura pronta para localização)
+
+> Nome anterior (provisório): ConsoleShelf. A especificação original está em `docs/origem/`.
 
 ## 1. Visão e problema
 
-Pessoas que usam múltiplos emuladores no macOS guardam ROMs em diferentes pastas e precisam abrir manualmente cada emulador e escolher o jogo. A experiência é fragmentada e a organização depende de ferramentas diversas. **ConsoleShelf** resolve isso com uma biblioteca e um launcher unificados, de estética inspirada em interfaces de consoles portáteis, sem implementar emulação.
+Pessoas que usam múltiplos emuladores no macOS guardam ROMs em diferentes pastas e precisam abrir manualmente cada emulador e escolher o jogo. A experiência é fragmentada e a organização depende de ferramentas diversas. **RetroX** resolve isso com uma biblioteca e um launcher unificados, de estética inspirada em interfaces de consoles portáteis, sem implementar emulação.
 
 ### Proposta de valor
 
@@ -133,3 +135,21 @@ Pessoas que usam múltiplos emuladores no macOS guardam ROMs em diferentes pasta
 ## 11. Futuro, após MVP
 
 Extensões para outros adapters e formatos, RetroAchievements, provedores opcionais de metadados com limites de API, layouts alternativos (incluindo inspiração dual-screen), temas próprios, assets animados, importação gerenciada explicitamente opt-in e telemetria apenas se houver consentimento. Validar demanda antes de implementar cada item.
+
+## 12. Revisão 0.2 (2026-10-27)
+
+Resultado da revisão feita no plano técnico aprovado. Prevalece sobre as seções anteriores em caso de conflito.
+
+| Ref. | Ajuste |
+|---|---|
+| RF-03 | A detecção **exata** de arquivo movido (mesmo volume + mesmo `fileIdentifier`) passa a ser Must, porque sem ela o "ID persistente" se perde num simples mover de pasta. A UI de revisão de movidos/duplicatas continua em RF-14 (Should). |
+| RF-02 | "Detecção assistida" significa, em ordem: (1) dica de sistema da pasta-fonte; (2) leitura de cabeçalho de até 64 KB, sem hash; (3) extensão inequívoca. Arquivo ambíguo fica em `needsReview` e nunca é atribuído em silêncio. Ver ADR-0012. |
+| RF-05 | "Compatibilidade" = bundle válido, executável presente e executável, bundle ID esperado (aviso se diferente), arquitetura executável no host (x86_64 em Apple Silicon exige Rosetta) e versão registrada. Sem bloqueio por versão no MVP. |
+| RF-06 | A evidência de "testado no macOS" fica em `docs/spikes/`. O critério do Dolphin fica pendente até haver Dolphin instalado na máquina de teste. |
+| Jornadas 2 e 5 | Dependem de requisitos Should (RF-11, RF-12). No MVP Must, a home é o Library Mode; recentes e favoritos aparecem quando existirem. |
+| RF-08 | Hipótese a medir, não promessa: filtro em menos de 100 ms com 5.000 itens. |
+| §7 Dados | `GameSystem` vira catálogo estático em código; preferências do usuário por sistema ficam em `SystemPreference`. `GameEmulatorOverride` vira relacionamento opcional no jogo (1:1). |
+| Formatos | PS2: `iso`, `chd`, `cso`, `zso` (declarados pelo bundle do PCSX2 2.9.144). `mdf`, `bin/cue` e `elf` depois, com teste. GameCube/Wii: `iso`, `gcm`, `rvz`, `wbfs`, `ciso`, `gcz`, `wia`, pendente de verificação com o Dolphin. ZIP/7z: nunca. |
+| Jornada 2 | "Retornar à biblioteca" = o emulador é aberto em modo batch (fecha ao parar o jogo) e o RetroX volta à frente quando o processo termina. |
+| RNF-09 | Além de Xcode/`xcodebuild`, o caminho reproduzível sem Xcode é `swift build` / `swift test` (SwiftPM). |
+| Plataforma | O deployment target macOS 14 compila, mas não é testável na máquina de desenvolvimento atual (macOS 27). A escolha entre 14 e 15 será feita no gate da Fase 1 (ver ADR-0005). |
