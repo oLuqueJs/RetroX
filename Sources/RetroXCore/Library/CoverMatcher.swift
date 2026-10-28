@@ -24,23 +24,43 @@ public enum CoverMatcher {
     /// Prefere o serial do disco (como o PCSX2 nomeia as capas que baixa); depois o nome idêntico; senão,
     /// a capa cujo nome é o prefixo mais longo do nome da ROM (ou vice-versa).
     public static func match(romFilename: String, serial: String? = nil, covers: [URL]) -> URL? {
-        if let serial, let cover = covers.first(where: {
-            ($0.lastPathComponent as NSString).deletingPathExtension.caseInsensitiveCompare(serial) == .orderedSame
-        }) {
-            return cover
+        PreparedCovers(covers).match(romFilename: romFilename, serial: serial)
+    }
+
+    struct PreparedCovers {
+        private struct Cover {
+            let url: URL
+            let basename: String
+            let key: String
         }
-        let romKey = key(romFilename)
-        guard romKey.count >= minimumKeyLength else { return nil }
-        var best: (url: URL, length: Int)?
-        for cover in covers {
-            let coverKey = key(cover.lastPathComponent)
-            guard coverKey.count >= minimumKeyLength else { continue }
-            if coverKey == romKey { return cover }
-            if romKey.hasPrefix(coverKey) || coverKey.hasPrefix(romKey) {
-                let length = min(coverKey.count, romKey.count)
-                if length > (best?.length ?? 0) { best = (cover, length) }
+
+        private let covers: [Cover]
+
+        init(_ urls: [URL]) {
+            covers = urls.map { url in
+                Cover(url: url, basename: (url.lastPathComponent as NSString).deletingPathExtension, key: CoverMatcher.key(url.lastPathComponent))
             }
         }
-        return best?.url
+
+        func match(romFilename: String, serial: String? = nil) -> URL? {
+            if let serial, let cover = covers.first(where: {
+                $0.basename.caseInsensitiveCompare(serial) == .orderedSame
+            }) {
+                return cover.url
+            }
+            let romKey = key(romFilename)
+            guard romKey.count >= minimumKeyLength else { return nil }
+            var best: (url: URL, length: Int)?
+            for cover in covers {
+                let coverKey = cover.key
+                guard coverKey.count >= minimumKeyLength else { continue }
+                if coverKey == romKey { return cover.url }
+                if romKey.hasPrefix(coverKey) || coverKey.hasPrefix(romKey) {
+                    let length = min(coverKey.count, romKey.count)
+                    if length > (best?.length ?? 0) { best = (cover.url, length) }
+                }
+            }
+            return best?.url
+        }
     }
 }

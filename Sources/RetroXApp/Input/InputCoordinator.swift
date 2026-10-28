@@ -1,7 +1,7 @@
 import GameController
 import Observation
 import RetroXCore
-
+ 
 /// Ações semânticas da interface. Teclado e controle produzem as mesmas ações (ADR-0007).
 enum InputAction: Hashable, Sendable {
     case up, down, left, right

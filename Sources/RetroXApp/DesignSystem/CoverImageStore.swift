@@ -10,6 +10,7 @@ final class CoverImageStore {
     /// Versões minúsculas para o fundo ambiente: ampliadas, já ficam desfocadas sem filtro caro.
     private var ambientImages: [URL: NSImage] = [:]
     @ObservationIgnored private var inFlight: Set<URL> = []
+    @ObservationIgnored private var ambientInFlight: Set<URL> = []
 
     nonisolated static let maxPixelSize = 900
 
@@ -22,10 +23,11 @@ final class CoverImageStore {
     }
 
     func loadAmbient(_ url: URL) async {
-        guard ambientImages[url] == nil else { return }
+        guard ambientImages[url] == nil, ambientInFlight.insert(url).inserted else { return }
         let cgImage = await Task.detached(priority: .utility) {
             CoverThumbnailer.thumbnail(of: url, maxPixelSize: 36)
         }.value
+        ambientInFlight.remove(url)
         if let cgImage {
             ambientImages[url] = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
         }

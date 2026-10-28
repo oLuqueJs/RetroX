@@ -43,6 +43,7 @@ public enum LibraryBuilder {
         let covers = discovery.coverDirectories
             .flatMap { fileSystem.contentsOfDirectory(at: $0) }
             .filter { CoverMatcher.imageExtensions.contains($0.pathExtension.lowercased()) }
+        let preparedCovers = CoverMatcher.PreparedCovers(covers)
         // O PCSX2 nomeia as capas que baixa pelo serial do disco, e o banco de dados dele também usa o serial.
         let roms = GameScanner.scan(discovery.romDirectories, extensions: extensions)
             .map { rom in (rom, system == .ps2 ? PS2DiscReader.serial(of: rom.url) : nil) }
@@ -56,7 +57,7 @@ public enum LibraryBuilder {
                     fileSize: rom.fileSize,
                     serial: serial,
                     info: serial.flatMap { index[$0] },
-                    coverURL: CoverMatcher.match(romFilename: rom.url.lastPathComponent, serial: serial, covers: covers)
+                    coverURL: preparedCovers.match(romFilename: rom.url.lastPathComponent, serial: serial)
                 )
             }
             .sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }

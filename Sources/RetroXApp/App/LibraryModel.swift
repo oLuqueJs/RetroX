@@ -92,12 +92,16 @@ final class LibraryModel {
     }
 
     var focusedIndex: Int? {
-        let visible = visibleGames
-        return visible.firstIndex { $0.id == focusedGameID } ?? (visible.isEmpty ? nil : 0)
+        focusedIndex(in: visibleGames)
     }
 
     var focusedGame: Game? {
-        focusedIndex.map { visibleGames[$0] }
+        let visible = visibleGames
+        return focusedIndex(in: visible).map { visible[$0] }
+    }
+
+    private func focusedIndex(in visible: [Game]) -> Int? {
+        visible.firstIndex { $0.id == focusedGameID } ?? (visible.isEmpty ? nil : 0)
     }
 
     func focus(_ game: Game) {
@@ -106,7 +110,7 @@ final class LibraryModel {
 
     func moveFocus(by offset: Int) {
         let visible = visibleGames
-        guard let index = focusedIndex, !visible.isEmpty else { return }
+        guard let index = focusedIndex(in: visible), !visible.isEmpty else { return }
         focusedGameID = visible[min(max(index + offset, 0), visible.count - 1)].id
     }
 

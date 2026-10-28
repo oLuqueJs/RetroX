@@ -115,6 +115,16 @@ struct CoverMatcherTests {
         let covers = ["Jogo.png", "Jogo 2.png"].map { URL(filePath: "/c/\($0)") }
         #expect(CoverMatcher.match(romFilename: "Jogo 2.iso", covers: covers)?.lastPathComponent == "Jogo 2.png")
     }
+
+    @Test("Capas preparadas preservam prioridade e ordem em empates")
+    func preparedCoverPriority() {
+        let covers = ["Jogo extra.png", "Jogo outro.jpg", "SLUS-12345.png", "slus-12345.jpg", "Jogo.png"]
+            .map { URL(filePath: "/c/\($0)") }
+        let prepared = CoverMatcher.PreparedCovers(covers)
+        #expect(prepared.match(romFilename: "Jogo.iso", serial: "slus-12345") == covers[2])
+        #expect(prepared.match(romFilename: "Jogo.iso") == covers[4])
+        #expect(CoverMatcher.PreparedCovers(Array(covers.prefix(2))).match(romFilename: "Jogo.iso") == covers[0])
+    }
 }
 
 struct JSONFileStoreTests {
