@@ -9,10 +9,12 @@ public struct Game: Identifiable, Hashable, Sendable {
     public let pluginID: EmulatorPluginID
     public let romURL: URL
     public let fileSize: Int64
+    /// Serial do disco ("SLUS-21490"), quando o formato permite ler.
+    public let serial: String?
     public let coverURL: URL?
     public let searchKey: String
 
-    public init(romURL: URL, systemID: GameSystemID, pluginID: EmulatorPluginID, fileSize: Int64, coverURL: URL?) {
+    public init(romURL: URL, systemID: GameSystemID, pluginID: EmulatorPluginID, fileSize: Int64, serial: String? = nil, coverURL: URL?) {
         let title = TitleParser.displayTitle(fromFilename: romURL.lastPathComponent)
         self.id = romURL.standardizedFileURL.path(percentEncoded: false)
         self.title = title
@@ -20,6 +22,7 @@ public struct Game: Identifiable, Hashable, Sendable {
         self.pluginID = pluginID
         self.romURL = romURL
         self.fileSize = fileSize
+        self.serial = serial
         self.coverURL = coverURL
         self.searchKey = TitleParser.searchKey(title)
     }

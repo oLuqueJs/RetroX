@@ -45,12 +45,15 @@ public enum LibraryBuilder {
             .filter { CoverMatcher.imageExtensions.contains($0.pathExtension.lowercased()) }
         return GameScanner.scan(discovery.romDirectories, extensions: extensions)
             .map { rom in
-                Game(
+                // O PCSX2 nomeia as capas que baixa pelo serial do disco.
+                let serial = system == .ps2 ? PS2DiscReader.serial(of: rom.url) : nil
+                return Game(
                     romURL: rom.url,
                     systemID: system,
                     pluginID: plugin.id,
                     fileSize: rom.fileSize,
-                    coverURL: CoverMatcher.match(romFilename: rom.url.lastPathComponent, covers: covers)
+                    serial: serial,
+                    coverURL: CoverMatcher.match(romFilename: rom.url.lastPathComponent, serial: serial, covers: covers)
                 )
             }
             .sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }

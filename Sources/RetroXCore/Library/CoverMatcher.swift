@@ -21,8 +21,14 @@ public enum CoverMatcher {
             .joined()
     }
 
-    /// Prefere o nome idêntico; senão, a capa cujo nome é o prefixo mais longo do nome da ROM (ou vice-versa).
-    public static func match(romFilename: String, covers: [URL]) -> URL? {
+    /// Prefere o serial do disco (como o PCSX2 nomeia as capas que baixa); depois o nome idêntico; senão,
+    /// a capa cujo nome é o prefixo mais longo do nome da ROM (ou vice-versa).
+    public static func match(romFilename: String, serial: String? = nil, covers: [URL]) -> URL? {
+        if let serial, let cover = covers.first(where: {
+            ($0.lastPathComponent as NSString).deletingPathExtension.caseInsensitiveCompare(serial) == .orderedSame
+        }) {
+            return cover
+        }
         let romKey = key(romFilename)
         guard romKey.count >= minimumKeyLength else { return nil }
         var best: (url: URL, length: Int)?

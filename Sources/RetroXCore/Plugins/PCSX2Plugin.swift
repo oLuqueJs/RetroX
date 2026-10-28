@@ -85,12 +85,12 @@ public struct PCSX2Plugin: EmulatorPlugin {
         let nested = children
             .filter { fileSystem.kind(of: $0) == .directory && $0.pathExtension.lowercased() != "app" }
             .flatMap { fileSystem.contentsOfDirectory(at: $0) }
-        for candidate in (children + nested) where candidate.pathExtension.lowercased() == "app" {
-            if let info = try? inspector.inspect(candidate), let bundleID = info.bundleIdentifier, expected.contains(bundleID) {
-                return info
-            }
-        }
-        return nil
+        let matches = (children + nested)
+            .filter { $0.pathExtension.lowercased() == "app" }
+            .compactMap { try? inspector.inspect($0) }
+            .filter { $0.bundleIdentifier.map(expected.contains) == true }
+        // Com versões lado a lado (ex.: depois de atualizar), usa a mais nova.
+        return matches.max { ($0.version ?? "").compare($1.version ?? "", options: .numeric) == .orderedAscending }
     }
 
     /// No modo portátil, o PCSX2 guarda a configuração na pasta que contém o `.app`.
