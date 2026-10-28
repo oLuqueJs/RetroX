@@ -8,15 +8,7 @@ struct TopBar: View {
     var body: some View {
         HStack(spacing: Spacing.m) {
             // Tile (não círculo), para não ser confundido com a foto do perfil à direita.
-            HStack(spacing: 10) {
-                BrandMark(size: 30)
-                    .accessibilityHidden(true)
-                (Text("Retro").foregroundStyle(Theme.textPrimary) + Text("X").foregroundStyle(Theme.accent))
-                    .font(.system(size: 20, weight: .heavy, design: .rounded))
-                    .tracking(-0.3)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("RetroX")
+            BrandLockup(size: 20)
             ScreenTabs()
                 .padding(.leading, Spacing.s)
             Spacer()
