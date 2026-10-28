@@ -86,9 +86,6 @@ final class AppModel {
         var profile = draft.profile
         profile.name = profile.name.trimmingCharacters(in: .whitespaces)
         if profile.name.isEmpty { profile.name = String(localized: "Jogador \(profiles.profiles.count + (draft.isNew ? 1 : 0))") }
-        if let username = profile.retroAchievementsUsername?.trimmingCharacters(in: .whitespaces) {
-            profile.retroAchievementsUsername = username.isEmpty ? nil : username
-        }
         if draft.isNew {
             let created = profiles.create(name: profile.name)
             profile.id = created.id

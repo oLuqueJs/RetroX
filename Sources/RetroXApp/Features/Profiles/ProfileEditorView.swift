@@ -37,14 +37,6 @@ struct ProfileEditorView: View {
                         TextField("Jogador", text: $draft.profile.name)
                             .textFieldStyle(.roundedBorder)
                     }
-                    field(String(localized: "Usuário do RetroAchievements (opcional)")) {
-                        TextField("usuário", text: Binding(
-                            get: { draft.profile.retroAchievementsUsername ?? "" },
-                            set: { draft.profile.retroAchievementsUsername = $0 }
-                        ))
-                        .textFieldStyle(.roundedBorder)
-                        AchievementsCheck(username: draft.profile.retroAchievementsUsername)
-                    }
                 }
             }
 
@@ -122,28 +114,6 @@ private struct DraftAvatar: View {
         if let source = draft.avatarSource { return NSImage(contentsOf: source) }
         if draft.removeAvatar { return nil }
         return model.profiles.avatarURL(for: draft.profile).flatMap(NSImage.init(contentsOf:))
-    }
-}
-
-/// Confere o usuário do perfil com a conta em que o PCSX2 está conectado. Não troca a conta do emulador.
-struct AchievementsCheck: View {
-    let username: String?
-    @Environment(AppModel.self) private var model
-
-    var body: some View {
-        if let status = model.plugins.entries.compactMap(\.discovery?.achievements).first {
-            let wanted = username?.trimmingCharacters(in: .whitespaces).nilIfEmpty
-            switch (status.isEnabled, status.username, wanted) {
-            case (false, _, _):
-                StatusLine(kind: .info, text: String(localized: "As conquistas estão desligadas no PCSX2. Ative e entre na sua conta em Configurações > Conquistas, no próprio PCSX2."))
-            case (true, nil, _):
-                StatusLine(kind: .warning, text: String(localized: "As conquistas estão ligadas no PCSX2, mas sem conta conectada."))
-            case (true, let connected?, let wanted?) where connected.caseInsensitiveCompare(wanted) != .orderedSame:
-                StatusLine(kind: .warning, text: String(localized: "O PCSX2 está conectado como \(connected), não como \(wanted). Troque a conta no próprio PCSX2."))
-            case (true, let connected?, _):
-                StatusLine(kind: .ok, text: String(localized: "O PCSX2 está conectado como \(connected)\(status.isHardcore ? String(localized: " (modo hardcore)") : "")."))
-            }
-        }
     }
 }
 

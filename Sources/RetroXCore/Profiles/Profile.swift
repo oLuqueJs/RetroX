@@ -10,8 +10,6 @@ public struct Profile: Codable, Identifiable, Sendable, Equatable, Hashable {
     /// Acento do tema RetroX; os outros temas têm acento próprio.
     public var accent: Palette.Accent
     public var appearance: AppearancePreference
-    /// Usuário do RetroAchievements que este jogador usa (só para conferir com o emulador).
-    public var retroAchievementsUsername: String?
 
     public init(
         id: UUID = UUID(),
@@ -19,8 +17,7 @@ public struct Profile: Codable, Identifiable, Sendable, Equatable, Hashable {
         avatarFile: String? = nil,
         theme: ThemeID = .retrox,
         accent: Palette.Accent = .coral,
-        appearance: AppearancePreference = .system,
-        retroAchievementsUsername: String? = nil
+        appearance: AppearancePreference = .system
     ) {
         self.id = id
         self.name = name
@@ -28,7 +25,6 @@ public struct Profile: Codable, Identifiable, Sendable, Equatable, Hashable {
         self.theme = theme
         self.accent = accent
         self.appearance = appearance
-        self.retroAchievementsUsername = retroAchievementsUsername
     }
 
     /// Campos novos entram com valor padrão, para arquivos de versões anteriores continuarem abrindo.
@@ -40,7 +36,6 @@ public struct Profile: Codable, Identifiable, Sendable, Equatable, Hashable {
         theme = (try? container.decodeIfPresent(ThemeID.self, forKey: .theme)) ?? .retrox
         accent = (try? container.decodeIfPresent(Palette.Accent.self, forKey: .accent)) ?? .coral
         appearance = (try? container.decodeIfPresent(AppearancePreference.self, forKey: .appearance)) ?? .system
-        retroAchievementsUsername = try container.decodeIfPresent(String.self, forKey: .retroAchievementsUsername)
     }
 
     /// Iniciais para o avatar sem foto: "Ana Souza" → "AS", "Jogador 1" → "J1", "léo" → "L".

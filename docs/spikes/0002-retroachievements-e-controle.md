@@ -1,6 +1,6 @@
 # Spike 0002 — RetroAchievements e controle integrados ao PCSX2
 
-**Data:** 2026-10-28 · **Status:** validado (leitura implementada; escrita pendente de consentimento e teste com controle)
+**Data:** 2026-10-28 · **Status:** validado. A parte de RetroAchievements foi removida do app a pedido do usuário (D12); a de controle segue em leitura.
 
 ## Perguntas
 1. Dá para validar a configuração do RetroAchievements do emulador junto com o RetroX, inclusive por perfil?
@@ -11,7 +11,7 @@ Tudo abaixo foi verificado só lendo arquivos (PCSX2 2.9.147, `PCSX2.ini` do usu
 ## RetroAchievements
 **O que o PCSX2 guarda:** a seção `[Achievements]` do `PCSX2.ini`, com `Enabled`, `ChallengeMode` (hardcore), `EncoreMode`, opções de notificação e, quando há login, `Username` e `Token`. Na máquina do usuário: `Enabled = false` e sem `Username` nem `Token`, ou seja, desligado e sem conta.
 
-**Implementado (só leitura):**
+**Implementado e depois removido (D12):**
 - A descoberta do plugin lê `Enabled`, `ChallengeMode` e `Username`. **O token nunca é consultado nem exibido**; o teste `achievementsAndController` garante que ele não aparece na descoberta.
 - Emuladores mostra "desligado", "ligado sem conta" ou "conectado como X (hardcore)".
 - Cada perfil pode guardar o usuário do RetroAchievements. O editor de perfil compara com a conta conectada no PCSX2 e avisa se for outra.

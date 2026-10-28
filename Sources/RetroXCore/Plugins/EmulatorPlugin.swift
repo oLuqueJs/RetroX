@@ -66,15 +66,6 @@ public enum PluginIssue: Sendable, Equatable {
     }
 }
 
-/// Estado do RetroAchievements no emulador. Só o que serve para conferir; o token de login nunca é lido.
-public struct AchievementsStatus: Sendable, Equatable {
-    public var isEnabled: Bool
-    public var isHardcore: Bool
-    public var username: String?
-
-    public var isLoggedIn: Bool { username != nil }
-}
-
 /// Como o controle está configurado no emulador (primeira porta).
 public struct ControllerSummary: Sendable, Equatable {
     public struct Binding: Sendable, Equatable, Hashable {
@@ -103,7 +94,6 @@ public struct PluginDiscovery: Sendable, Equatable {
     public var coverDirectories: [URL] = []
     public var settingsFile: URL?
     public var bios: BIOSStatus = .unknown
-    public var achievements: AchievementsStatus?
     public var controller: ControllerSummary?
     /// Banco de dados de jogos do emulador (no PCSX2, `GameIndex.yaml` dentro do app).
     public var gameIndexFile: URL?

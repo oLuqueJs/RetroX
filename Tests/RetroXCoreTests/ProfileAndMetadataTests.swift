@@ -121,8 +121,8 @@ struct GameIndexTests {
 }
 
 struct PluginEmulatorSettingsTests {
-    @Test("RetroAchievements e controle vêm do PCSX2.ini; o token não aparece em nenhum lugar")
-    func achievementsAndController() {
+    @Test("Controle vem do PCSX2.ini; nada da seção de conquistas (nem o token) é lido")
+    func controllerOnly() {
         let scenario = PluginScenario(settings: """
             [Achievements]
             Enabled = true
@@ -136,19 +136,16 @@ struct PluginEmulatorSettingsTests {
             Start = SDL-0/Start
             """)
         let discovery = scenario.discover()
-        #expect(discovery.achievements == AchievementsStatus(isEnabled: true, isHardcore: true, username: "jogadora"))
         #expect(discovery.controller?.type == "DualShock2")
         #expect(discovery.controller?.device == "SDL-0")
         #expect(discovery.controller?.bindings.first == ControllerSummary.Binding(button: "Cross", input: "SDL-0/FaceSouth"))
         #expect(!String(describing: discovery).contains("SEGREDO"))
+        #expect(!String(describing: discovery).contains("jogadora"))
     }
 
-    @Test("Conquistas desligadas e sem login")
-    func achievementsOff() {
-        let discovery = PluginScenario(settings: "[Achievements]\nEnabled = false\n").discover()
-        #expect(discovery.achievements == AchievementsStatus(isEnabled: false, isHardcore: false, username: nil))
-        #expect(discovery.achievements?.isLoggedIn == false)
-        #expect(discovery.controller == nil)
+    @Test("Sem [Pad1], sem resumo de controle")
+    func noController() {
+        #expect(PluginScenario(settings: "[UI]\nStartFullscreen = true\n").discover().controller == nil)
     }
 
     @Test("Aponta o GameIndex.yaml de dentro do app, quando existe")

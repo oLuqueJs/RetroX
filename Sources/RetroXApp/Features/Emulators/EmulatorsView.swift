@@ -135,7 +135,6 @@ private struct DiscoveryReport: View {
                 gamesLines
                 coversLine
                 biosLine
-                achievementsLine
                 if let controller = discovery.controller {
                     ControllerMapping(controller: controller, emulator: entry.plugin.displayName)
                 }
@@ -219,21 +218,6 @@ private struct DiscoveryReport: View {
             StatusLine(kind: .warning, text: String(localized: "BIOS não configurada: abra o emulador e conclua a configuração inicial."))
         case .unknown:
             StatusLine(kind: .info, text: String(localized: "Configuração do emulador não encontrada: ele pedirá a BIOS na primeira vez."))
-        }
-    }
-
-    /// Estado do RetroAchievements no emulador. A conta é escolhida e conectada no próprio emulador.
-    @ViewBuilder
-    private var achievementsLine: some View {
-        if let status = discovery.achievements {
-            switch (status.isEnabled, status.username) {
-            case (false, _):
-                StatusLine(kind: .info, text: String(localized: "RetroAchievements desligado no \(entry.plugin.displayName)."))
-            case (true, nil):
-                StatusLine(kind: .warning, text: String(localized: "RetroAchievements ligado, mas sem conta conectada no \(entry.plugin.displayName)."))
-            case (true, let username?):
-                StatusLine(kind: .ok, text: String(localized: "RetroAchievements: conectado como \(username)\(status.isHardcore ? String(localized: " · hardcore") : "")"))
-            }
         }
     }
 

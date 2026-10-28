@@ -71,7 +71,6 @@ public struct PCSX2Plugin: EmulatorPlugin {
             let coversURL = resolve(settings.value("Covers", in: "Folders") ?? "covers", relativeTo: dataDirectory)
             if fileSystem.kind(of: coversURL) == .directory { discovery.coverDirectories.append(coversURL) }
             discovery.bios = biosStatus(settings: settings, dataDirectory: dataDirectory)
-            discovery.achievements = Self.achievements(settings)
             discovery.controller = Self.controller(settings)
         }
         if let app = discovery.app {
@@ -104,15 +103,6 @@ public struct PCSX2Plugin: EmulatorPlugin {
         let folder = app.bundleURL.deletingLastPathComponent()
         let markers = ["portable.ini", "portable.txt"].map { folder.appending(path: $0, directoryHint: .notDirectory) }
         return markers.contains(where: { fileSystem.kind(of: $0) == .regularFile }) ? folder : nil
-    }
-
-    /// `[Achievements]` do PCSX2.ini. O token de login (`Token`) não é consultado.
-    static func achievements(_ settings: INIFile) -> AchievementsStatus {
-        AchievementsStatus(
-            isEnabled: settings.value("Enabled", in: "Achievements") == "true",
-            isHardcore: settings.value("ChallengeMode", in: "Achievements") == "true",
-            username: settings.value("Username", in: "Achievements")
-        )
     }
 
     static let padButtons = ["Cross", "Circle", "Square", "Triangle", "Up", "Down", "Left", "Right",
