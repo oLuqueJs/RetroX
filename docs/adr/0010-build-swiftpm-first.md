@@ -18,5 +18,9 @@ Um projeto `.xcodeproj` (gerado por XcodeGen, com consentimento) só será criad
 ## Consequências
 O núcleo é testável sem Xcode e o repositório não carrega um `.xcodeproj` difícil de revisar. Em troca, o bundle do app é montado por script, e recursos como asset catalog e String Catalog podem exigir passos extras até existir um projeto Xcode.
 
+Peculiaridades das CLT encontradas na Sprint 1 (Swift 6.4, backend `swiftbuild`):
+- A descoberta do plugin de macros do Swift Testing é intermitente (2 falhas em 3 builds limpos). Os testes rodam por `scripts/test.sh`, que passa `-plugin-path` explicitamente quando o toolchain ativo é o das CLT.
+- O backend antigo (`--build-system native`) não encontra o módulo `Testing` nas CLT.
+
 ## Alternativas
 `.xcodeproj` escrito à mão sem Xcode (frágil); Tuist ou XcodeGen desde já (ferramenta externa sem necessidade imediata); esperar o Xcode para começar (atrasa a prova técnica do launch, que não depende dele).
