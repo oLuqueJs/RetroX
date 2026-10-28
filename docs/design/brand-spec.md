@@ -4,7 +4,12 @@ Direção escolhida em 2026-10-28 entre três propostas (Portátil quente, Edito
 
 Os valores abaixo são a fonte da verdade em `Sources/RetroXCore/Design/Palette.swift`, e o contraste é verificado por teste (`PaletteTests`).
 
-## Cores
+## Temas
+O RetroX tem 11 temas, escolhidos por perfil, cada um com variante clara e escura: **RetroX** (a paleta abaixo, com 4 acentos), Gruvbox, Catppuccin (Latte/Mocha), Tokyo Night (Day/Night), Nord, Solarized, Dracula (Alucard/Dracula), Rosé Pine (Dawn/Main), Everforest, Kanagawa (Lotus/Wave) e One. Os esquemas conhecidos usam as cores oficiais de cada projeto, com ajustes mínimos onde a cor original não atingia AA. Quase sempre o ajuste foi no texto secundário; em Catppuccin Latte, Tokyo Night Day, Solarized e Everforest claros, o texto principal ficou um pouco mais escuro para manter a hierarquia. Os valores estão em `Sources/RetroXCore/Design/Themes.swift`, e `ThemeTests` confere contraste e hierarquia de todos.
+
+Cada tema define oito tokens: fundo, superfície, elevado, texto, texto secundário, divisória, acento e texto sobre o acento.
+
+## Cores (tema RetroX)
 
 ### Neutros (quentes, nunca preto ou branco puros)
 | Token | Claro | Escuro | Uso |
@@ -51,7 +56,14 @@ SF Pro Rounded para títulos (tom de console), SF Pro para o resto. No máximo q
 Na prateleira, a capa em foco sobe 10%, ganha um halo na cor de tema e se reflete no "chão" da prateleira. Com Reduzir Movimento, fica só o anel de foco: nada cresce nem se desloca.
 
 ## Movimento
-Mola curta (0,32 s) para foco; esmaecimento de 0,15 s para trocas de tela e, com Reduzir Movimento, para tudo.
+- Foco: `snappy` (0,28 s, pouco quique).
+- Hover: `smooth` (0,22 s), com elevação leve (escala 1,03–1,04).
+- Trocas de tela: esmaecimento de 0,18 s.
+- Abas e seletor de layout deslizam a pílula selecionada (`matchedGeometryEffect`).
+- Com Reduzir Movimento, só esmaece: nada cresce nem se desloca.
+
+## Telas
+Perfis ("Quem vai jogar?", avatares de 128 pt com anel de foco), Início (palco + prateleira), Biblioteca (grade com quatro layouts: Capas 128 pt, Capas grandes 184 pt, Capas e nomes 148 pt, Lista), Emuladores, Detalhes (folha de 880 × 620) e Ajustes (Aparência e Controle).
 
 ## Voz
 Português do Brasil, direto e calmo. Mensagens de erro dizem o que aconteceu e oferecem a ação que resolve.

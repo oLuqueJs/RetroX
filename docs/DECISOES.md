@@ -18,6 +18,10 @@ Decisões do usuário e suposições de trabalho que não cabem num ADR. Decisõ
 | D5 | A "pasta raiz" de um emulador é a pasta que guarda o app dele junto com ROMs, capas e BIOS (ex.: `~/Emulators/ps2`). |
 | D6 | Direção visual **"Portátil quente"** (docs/design/brand-spec.md), com a usabilidade de launcher de portátil inspirada no iiSU e identidade própria. |
 | D7 | A skill `swiftui-design-skill` faz parte do projeto (`.claude/skills/`); os passos dela de baixar assets de marca não se aplicam. |
+| D8 | Perfis de jogador com tela de seleção ao abrir (estilo console). Favoritos, recentes e tema são por perfil; capa própria e informações dos jogos são compartilhadas. |
+| D9 | 11 temas de cor (RetroX + 10 esquemas conhecidos), cada um claro e escuro, escolhidos por perfil. |
+| D10 | Informações de jogos: banco do PCSX2 offline e Wikipedia/Wikidata sob demanda, com escolha do resultado (ADR-0014). Capas não são baixadas da internet. |
+| D11 | RetroAchievements e controle do PCSX2: só leitura por enquanto. Gravar perfil de entrada para o PCSX2 depende de consentimento e teste com controle (spike 0002). |
 
 ## Suposições de trabalho
 
@@ -35,4 +39,5 @@ Decisões do usuário e suposições de trabalho que não cabem num ADR. Decisõ
 
 - Instalar o Xcode e rodar `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` (Fase 1).
 - Instalar o Dolphin para validar a Fase 4.
+- Autorizar (ou não) o RetroX a criar um perfil de entrada próprio na pasta do PCSX2 e testar com um controle físico (spike 0002).
 - Escolher o bundle ID definitivo e ter conta Apple Developer para assinatura e notarização (Fase 7).
