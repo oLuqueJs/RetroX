@@ -2,7 +2,7 @@ import AppKit
 import RetroXCore
 import SwiftUI
 
-/// Abertura do app: o símbolo surge com um anel se desenhando em volta, o nome entra letra a letra,
+/// Abertura do app: a Rayo surge com um anel se desenhando em volta, o nome entra letra a letra,
 /// e tudo se dissolve revelando a tela de perfis.
 struct SplashView: View {
     @Environment(AppModel.self) private var model
@@ -24,14 +24,7 @@ struct SplashView: View {
                         .rotationEffect(.degrees(-90))
                         .frame(width: 132, height: 132)
                         .animation(moves ? .easeInOut(duration: 0.9 * Motion.settings.factor) : nil, value: revealed)
-                    RoundedRectangle.rx(28)
-                        .fill(Theme.accent)
-                        .frame(width: 96, height: 96)
-                        .overlay {
-                            Text("R")
-                                .font(.system(size: 56, weight: .heavy, design: .rounded))
-                                .foregroundStyle(Theme.onAccent)
-                        }
+                    BrandMark(size: 96)
                         .scaleEffect(revealed || !moves ? 1 : 0.6)
                         .rotationEffect(.degrees(revealed || !moves ? 0 : -12))
                         .opacity(revealed ? 1 : 0)
@@ -59,6 +52,30 @@ struct SplashView: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("RetroX")
+    }
+}
+
+/// O tile da Rayo; sem o recurso (build sem o bundle de recursos), cai no "R" provisório.
+struct BrandMark: View {
+    let size: CGFloat
+
+    var body: some View {
+        if let mark = Brand.mark {
+            Image(nsImage: mark)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: size, height: size)
+                .shadow(color: .black.opacity(0.18), radius: size * 0.08, y: size * 0.04)
+        } else {
+            RoundedRectangle.rx(size * 0.29)
+                .fill(Theme.accent)
+                .frame(width: size, height: size)
+                .overlay {
+                    Text("R")
+                        .font(.system(size: size * 0.58, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Theme.onAccent)
+                }
+        }
     }
 }
 

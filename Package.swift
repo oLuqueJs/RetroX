@@ -12,7 +12,7 @@ let package = Package(
     targets: [
         // Regras de negócio, sem SwiftUI e sem SwiftData: compila e testa só com as Command Line Tools.
         .target(name: "RetroXCore"),
-        .executableTarget(name: "RetroXApp", dependencies: ["RetroXCore"]),
+        .executableTarget(name: "RetroXApp", dependencies: ["RetroXCore"], resources: [.copy("Resources")]),
         // Ferramentas de desenvolvimento; não fazem parte do app distribuído.
         .executableTarget(name: "RXLaunchProbe", dependencies: ["RetroXCore"]),
         .executableTarget(name: "RXFakeEmulator"),

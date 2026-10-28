@@ -8,6 +8,8 @@
 	<string>RetroX</string>
 	<key>CFBundleExecutable</key>
 	<string>RetroX</string>
+	<key>CFBundleIconFile</key>
+	<string>RetroX</string>
 	<key>CFBundleIdentifier</key>
 	<!-- Provisório (docs/DECISOES.md, S1): trocar antes de assinar com Developer ID. -->
 	<string>local.retrox.RetroX</string>

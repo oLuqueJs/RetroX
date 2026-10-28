@@ -15,9 +15,12 @@ bin_dir="$(swift build -c "$configuration" --show-bin-path)"
 
 app=".build/RetroX.app"
 rm -rf "$app"
-mkdir -p "$app/Contents/MacOS"
+mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin_dir/RetroX" "$app/Contents/MacOS/RetroX"
 cp Support/Info.plist "$app/Contents/Info.plist"
+cp Support/RetroX.icns "$app/Contents/Resources/RetroX.icns"
+# Recursos do SwiftPM (marca da Rayo); o Bundle.module procura em Contents/Resources.
+cp -R "$bin_dir/RetroX_RetroXApp.bundle" "$app/Contents/Resources/"
 codesign --force --sign - "$app"
 
 echo "$app"

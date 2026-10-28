@@ -7,9 +7,19 @@ struct TopBar: View {
 
     var body: some View {
         HStack(spacing: Spacing.m) {
-            Text("RetroX")
-                .font(.system(size: 20, weight: .heavy, design: .rounded))
-                .foregroundStyle(Theme.textPrimary)
+            HStack(spacing: Spacing.s) {
+                if let avatar = Brand.avatar {
+                    Image(nsImage: avatar)
+                        .resizable()
+                        .interpolation(.high)
+                        .frame(width: 28, height: 28)
+                        .overlay(Circle().strokeBorder(Theme.divider, lineWidth: 1))
+                        .accessibilityHidden(true)
+                }
+                Text("RetroX")
+                    .font(.system(size: 20, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+            }
             ScreenTabs()
                 .padding(.leading, Spacing.s)
             Spacer()
