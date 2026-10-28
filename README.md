@@ -34,15 +34,37 @@ RetroX é um launcher nativo para macOS que reúne seus jogos em uma biblioteca 
 
 O RetroX não inclui emuladores, jogos, BIOS ou chaves. Ele lê suas pastas de jogos sem copiar, mover ou alterar os arquivos.
 
+<p align="center">
+  <img src="docs/images/retrox-inicio.png" alt="Tela inicial do RetroX com uma prateleira de jogos fictícios no tema Rayo Paradise escuro" width="100%" />
+  <br />
+  <sub>Tela inicial com uma biblioteca de demonstração.</sub>
+</p>
+
+## Destaques
+
+- **Biblioteca visual:** navegue por prateleira, carrossel, grade ou lista e encontre seus jogos por busca e console.
+- **Perfis pessoais:** cada pessoa mantém seus próprios favoritos, recentes e preferências.
+- **Feito para controle:** percorra o aplicativo pelo controle ou teclado, com glifos para Xbox, PlayStation e Switch.
+- **Temas para escolher:** personalize cores, fonte e animações com variantes claras e escuras.
+- **Seus emuladores:** configure o PCSX2, abra o jogo e volte ao RetroX ao terminar.
+
+### Temas para o seu jeito de jogar
+
+| Rayo Paradise · claro | Gruvbox · escuro |
+| :---: | :---: |
+| <img src="docs/images/retrox-rayo-claro.png" alt="RetroX com o tema Rayo Paradise claro" /> | <img src="docs/images/retrox-gruvbox.png" alt="RetroX com o tema Gruvbox escuro" /> |
+
 ## Instalação
 
 ### macOS (Apple Silicon)
 
+**[Baixar a última versão](https://github.com/oLuqueJs/RetroX/releases/latest)**
+
+Você precisa do macOS 14 ou superior e dos emuladores instalados por você. Hoje o RetroX suporta o **PCSX2** (PS2); o Dolphin (GameCube/Wii) está planejado.
+
 1. Baixe `RetroX-<versão>.zip` na [página de Releases](https://github.com/oLuqueJs/RetroX/releases) e confira o `SHA256SUMS.txt`.
 2. Descompacte e mova o `RetroX.app` para `/Applications`.
 3. Na primeira vez, abra com o botão direito > **Abrir**. O app tem assinatura ad hoc e não é notarizado, então o Gatekeeper pede autorização.
-
-Requisitos: macOS 14 ou superior e os emuladores instalados por você. Hoje o RetroX suporta o **PCSX2** (PS2); o Dolphin (GameCube/Wii) está planejado.
 
 ## Como usar
 
@@ -147,6 +169,12 @@ O RetroX é escrito em Swift 6 (concorrência estrita) com SwiftUI e AppKit, e i
 - [Spikes](docs/spikes/) — evidências com emuladores reais
 - [Design](docs/design/brand-spec.md) e [kit da marca](docs/design/logo/README.md) — identidade e componentes
 - [Origem](docs/origem/) — especificação original do projeto
+
+<p align="center">
+  <img src="docs/design/logo/retrox-tile-512.png" alt="Rayo, personagem da identidade visual do RetroX" width="96" />
+  <br />
+  <sub>Conheça a Rayo no <a href="docs/design/logo/README.md">kit da marca</a>.</sub>
+</p>
 
 ## Licença
 
