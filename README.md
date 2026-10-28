@@ -134,7 +134,16 @@ swift scripts/brand-kit.swift
 
 ### Releases
 
-O workflow de testes do GitHub Actions roda em pull requests, em pushes para branches fora de `main` e em execuções manuais. O workflow de release reutiliza esses testes no commit enviado a `main`. Depois deles, o semantic-release analisa os commits convencionais, cria a tag e publica uma GitHub Release quando há mudanças que justificam uma nova versão, com o ZIP do `RetroX.app` para Apple Silicon e o SHA-256 anexados. A primeira versão automática será `1.0.0`.
+O workflow de testes do GitHub Actions roda em pull requests, em pushes para branches fora de `main` e em execuções manuais. O workflow de release reutiliza esses testes no commit enviado a `main`. Depois deles, o semantic-release analisa os commits convencionais, cria a tag e publica uma GitHub Release quando há mudanças que justificam uma nova versão, com o ZIP do `RetroX.app` para Apple Silicon e o SHA-256 anexados. Os tipos de commit definem a versão (regras em `.releaserc.json`):
+
+| Commit | Versão | Exemplo (a partir de 0.0.0) |
+| --- | --- | --- |
+| `BREAKING CHANGE` no corpo (qualquer tipo) | major | 1.0.0 |
+| `feat` | minor | 0.1.0 |
+| `fix`, `chore` | patch | 0.0.1 |
+| `docs`, `ci`, `refactor`, `test`, `perf`, `style`, `build` | sem release | — |
+
+Sem nenhuma tag no repositório, o semantic-release começa em `1.0.0`. Para começar em `0.x`, crie antes a tag `v0.0.0` no commit de partida.
 
 Para gerar o pacote localmente, execute `scripts/package-app.sh 1.2.3`. O arquivo vai para `dist/`, para a arquitetura do computador, com assinatura ad hoc. Cada execução do workflow também deixa um pacote de teste (versão `0.0.0`) em **Artifacts**. Não é preciso conta Apple: não há notarização, e o macOS pode pedir autorização para abrir o app.
 

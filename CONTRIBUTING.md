@@ -93,8 +93,10 @@ fix(launch): escapa caminhos com espaços
 docs(readme): atualiza a lista de emuladores
 ```
 
-Tipos usados: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`. Para mudança incompatível,
-adicione `!` depois do tipo (`feat!:`) e explique no corpo.
+Tipos usados: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`. Eles definem a versão:
+`feat` gera minor, `fix` e `chore` geram patch, e `docs`, `ci`, `refactor` e `test` não geram release.
+Para mudança incompatível, escreva `BREAKING CHANGE: <descrição>` no corpo do commit (gera major).
+O `!` depois do tipo não é reconhecido.
 
 ## Checklist do pull request
 
