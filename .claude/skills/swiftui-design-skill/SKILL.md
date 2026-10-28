@@ -2,6 +2,7 @@
 name: swiftui-design-skill
 description: SwiftUI frontend visual design skill. Creates beautiful, distinctive iOS/macOS interfaces that avoid generic AI slop patterns. Covers design direction, layout systems, typography, color, spacing, brand integration, and design review. Use when designing new SwiftUI views, reviewing UI quality, creating iOS prototypes, choosing visual styles, improving app aesthetics, or when the UI looks generic or AI-generated.
 license: MIT
+model: sonnet
 metadata:
   author: wholiver
   version: "1.0.0"
@@ -104,23 +105,10 @@ These patterns are **banned** in production UI. See `references/anti-ai-slop.md`
 
 ---
 
-## Brand Asset Protocol
+## Brand
 
-When building UI for a specific brand, follow this 5-step hard flow:
-
-1. **Ask** — Request brand guidelines, logo files, color palette, typography
-2. **Search** — If not provided, search the web for "[brand name] brand guidelines"
-3. **Download** — Get actual asset files (PNG/SVG logos, font files)
-4. **Verify** — Confirm colors match official sources (check hex values)
-5. **Write brand-spec.md** — Document: primary/secondary colors, fonts, logo usage rules, spacing tokens
-
-**Quality threshold**: 5 real brand colors, 10 verified design tokens, 2 font families, 8pt spacing grid.
-
-If no brand exists, create a brand-spec.md with:
-- 1 primary accent color (warm, not purple-blue gradient)
-- 1 neutral palette (grays with warm undertone)
-- 1 display font + 1 body font (SF Pro default is fine)
-- 8pt spacing grid
+If `docs/design/brand-spec.md` exists, follow it and skip direction work.
+Only if no spec exists, write a short one (1 accent, neutrals, fonts, 8pt grid). No web search, no asset downloads.
 
 ---
 
@@ -134,6 +122,7 @@ When requirements are vague or the user asks "what style should we use?", follow
 3. Check: Existing design system or brand assets?
 
 ### Phase 2: Recommend 3 Directions
+Only when the user asks for a new visual direction. Otherwise reuse the brand spec.
 Present 3 distinct design philosophies from different schools:
 
 | School          | Example Directions                          |
@@ -160,36 +149,7 @@ Present options clearly. After choice, lock in the design system.
 
 ### Step 1: Define the Design System (Before Coding)
 
-Create or confirm these design tokens:
-
-```swift
-// Requires: references/swift-extensions.md (Color(hex:) extension)
-// DesignTokens.swift
-enum DesignTokens {
-    // Colors
-    static let accent = Color(hex: "E85D3A")      // Warm coral
-    static let background = Color(hex: "FAFAF8")   // Warm white
-    static let textPrimary = Color(hex: "1A1A1A")   // Near-black
-    static let textSecondary = Color(hex: "6B6B6B") // Muted gray
-    
-    // Typography
-    static let displayFont = "New York"  // Serif for headings
-    static let bodyFont = "SF Pro"       // System default
-    
-    // Spacing (8pt grid)
-    static let spaceXS: CGFloat = 4
-    static let spaceS: CGFloat = 8
-    static let spaceM: CGFloat = 16
-    static let spaceL: CGFloat = 24
-    static let spaceXL: CGFloat = 32
-    static let spaceXXL: CGFloat = 48
-    
-    // Corner radius
-    static let radiusS: CGFloat = 8
-    static let radiusM: CGFloat = 12
-    static let radiusL: CGFloat = 16
-}
-```
+Create or confirm design tokens (colors, fonts, 8pt spacing, radii) before coding.
 
 ### Step 2: Build the Layout Hierarchy
 
@@ -220,28 +180,14 @@ Examples:
 
 ### Step 5: Review Against Checklist
 
-Before shipping, run the 5-Dimension Review (see `references/design-review.md`).
-
----
-
-## Common Mistakes to Avoid
-
-| Mistake                                    | Fix                                                      |
-| ------------------------------------------ | -------------------------------------------------------- |
-| Using `UIColor` or `NSColor`               | Use `Color` (SwiftUI native)                               |
-| `UIScreen.main.bounds` for sizing          | Use `containerRelativeFrame` or geometry-based modifiers |
-| Default blue tint everywhere               | Define a custom accent color in design tokens            |
-| No spacing system (random padding values)  | Use 8pt grid: 4, 8, 16, 24, 32, 48                       |
-| Emoji as icons                             | Use SF Symbols or custom icon assets                     |
-| Purple-blue gradient background            | Use solid warm neutrals                                  |
-| All content in one giant VStack            | Break into semantic sections with clear hierarchy        |
-| No visual hierarchy (everything same size) | Use 3+ type scales (display, heading, body, caption)     |
-| Ignoring dark mode                         | Define semantic colors that adapt to appearance          |
-| Generic "Welcome!" hero section            | Show actual content immediately                          |
+Self-check against the Validation Checklist below. Take screenshots or open
+`references/design-review.md` only if the user asks for a review.
 
 ---
 
 ## Quick Reference: Topic Router
+
+Read files in `references/` only when the task needs that topic; don't load them by default.
 
 | Topic                        | Reference File                      |
 | ---------------------------- | ----------------------------------- |
